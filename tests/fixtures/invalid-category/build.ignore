@@ -1,0 +1,4 @@
+# One relative project path per line.
+# Files listed here stay in source control but are excluded from the final .ubb package.
+README.md
+PLAN.md

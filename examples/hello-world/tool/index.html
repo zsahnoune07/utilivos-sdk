@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en" data-i18n-document-title="page.meta.title">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title></title>
+    <link rel="stylesheet" href="./utilivo/base.css" />
+    <link rel="stylesheet" href="./utilivo/layout.css" />
+    <link rel="stylesheet" href="./utilivo/components.css" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body class="uv-tool-page">
+    <main class="uv-tool-page__content">
+      <header class="uv-tool-page__header">
+        <h1 class="uv-tool-page__title" data-i18n="page.title"></h1>
+        <p class="uv-tool-page__subtitle" data-i18n="page.subtitle"></p>
+      </header>
+
+      <section class="uv-card uv-section uv-pattern-dashboard">
+        <article class="uv-pattern-dashboard__stat">
+          <span class="uv-text-body-sm uv-text-muted" data-i18n="stats.ready.label"></span>
+          <strong id="stat-ready" class="uv-text-headline-sm"></strong>
+        </article>
+        <article class="uv-pattern-dashboard__stat">
+          <span class="uv-text-body-sm uv-text-muted" data-i18n="stats.search.label"></span>
+          <strong id="stat-search" class="uv-text-headline-sm"></strong>
+        </article>
+        <article class="uv-pattern-dashboard__stat">
+          <span class="uv-text-body-sm uv-text-muted" data-i18n="stats.locale.label"></span>
+          <strong id="stat-locale" class="uv-text-headline-sm"></strong>
+        </article>
+        <article class="uv-pattern-dashboard__stat">
+          <span class="uv-text-body-sm uv-text-muted" data-i18n="stats.theme.label"></span>
+          <strong id="stat-theme" class="uv-text-headline-sm"></strong>
+        </article>
+      </section>
+
+      <section class="uv-card uv-section uv-pattern-form">
+        <h2 class="uv-section__title" data-i18n="form.section.title"></h2>
+        <p class="uv-section__description" data-i18n="form.section.description"></p>
+
+        <label class="uv-field">
+          <span class="uv-field__label" data-i18n="form.name.label"></span>
+          <input id="name" class="uv-input" type="text" data-i18n-placeholder="form.name.placeholder" />
+        </label>
+
+        <label class="uv-field">
+          <span class="uv-field__label" data-i18n="form.tone.label"></span>
+          <select id="tone" class="uv-select">
+            <option value="short" data-i18n="form.tone.short"></option>
+            <option value="detailed" data-i18n="form.tone.detailed"></option>
+          </select>
+        </label>
+
+        <label class="uv-field">
+          <span class="uv-field__label" data-i18n="form.notes.label"></span>
+          <textarea
+            id="notes"
+            class="uv-textarea"
+            rows="4"
+            data-i18n-placeholder="form.notes.placeholder"
+          ></textarea>
+        </label>
+
+        <label class="uv-switch">
+          <input id="notify" type="checkbox" />
+          <span class="uv-switch__track"><span class="uv-switch__thumb"></span></span>
+          <span data-i18n="form.notify.label"></span>
+        </label>
+
+        <div class="uv-pattern-form__actions">
+          <button id="ping" class="uv-button" type="button" data-i18n="actions.ping"></button>
+          <button id="clear" class="uv-button uv-button--secondary" type="button" data-i18n="actions.clear"></button>
+        </div>
+      </section>
+
+      <section class="uv-card uv-section uv-pattern-results">
+        <div class="uv-pattern-results__headline">
+          <h2 class="uv-section__title" data-i18n="result.section.title"></h2>
+          <span id="summary" class="uv-badge uv-badge--info"></span>
+        </div>
+        <pre id="output" class="uv-result"></pre>
+        <div id="status" class="uv-alert uv-alert--info" hidden>
+          <strong data-i18n="result.status.title"></strong>
+          <p id="status-body"></p>
+        </div>
+      </section>
+
+      <section class="uv-card uv-section uv-pattern-search-list">
+        <h2 class="uv-section__title" data-i18n="list.section.title"></h2>
+        <div class="uv-pattern-search-list__controls">
+          <input id="search" class="uv-input" type="search" data-i18n-placeholder="list.search.placeholder" />
+        </div>
+        <div id="list" class="uv-list uv-pattern-search-list__body" role="listbox" data-i18n-aria-label="list.aria"></div>
+        <div id="empty" class="uv-empty-state" hidden>
+          <h3 class="uv-section__title" data-i18n="list.empty.title"></h3>
+          <p class="uv-section__description" data-i18n="list.empty.description"></p>
+        </div>
+      </section>
+    </main>
+    <script src="./utilivo/tool.js"></script>
+    <script src="./main.js"></script>
+  </body>
+</html>

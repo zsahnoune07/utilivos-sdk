@@ -1,0 +1,24 @@
+required:
+  - manifest.json
+  - AGENTS.md
+  - build.ignore
+  - README.md
+  - PLAN.md
+  - .env.example
+  - tool/index.html
+  - tool/main.js
+  - tool/style.css
+  - tool/locales/en.json
+  - tool/utilivo/base.css
+  - tool/utilivo/components.css
+  - tool/utilivo/layout.css
+  - tool/utilivo/utilities.css
+  - tool/utilivo/patterns.css
+  - tool/utilivo/tool.js
+  - tool/assets/icon.png
+  - tool/assets/thumb.png
+  - tool/assets/screenshots/home.png
+  - tests/
+  - .utilivo/project.json
+generated:
+  - dist/

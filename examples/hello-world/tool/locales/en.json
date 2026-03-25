@@ -1,0 +1,102 @@
+{
+  "page": {
+    "meta": {
+      "title": "Hello World"
+    },
+    "title": "Hello World",
+    "subtitle": "Scaffolded with utilivo-sdk and rendered using host-aligned UI primitives."
+  },
+  "stats": {
+    "ready": {
+      "label": "Ready actions"
+    },
+    "search": {
+      "label": "Search updates"
+    },
+    "locale": {
+      "label": "Locale"
+    },
+    "theme": {
+      "label": "Theme"
+    }
+  },
+  "form": {
+    "section": {
+      "title": "Framework-first form pattern",
+      "description": "All controls, spacing, and states are composed from utilivo framework classes."
+    },
+    "name": {
+      "label": "Display name",
+      "placeholder": "Ada Lovelace"
+    },
+    "tone": {
+      "label": "Response style",
+      "short": "Short",
+      "detailed": "Detailed"
+    },
+    "notes": {
+      "label": "Notes",
+      "placeholder": "Optional context for the generated response."
+    },
+    "notify": {
+      "label": "Include notification preference"
+    }
+  },
+  "actions": {
+    "ping": "Ping",
+    "clear": "Clear"
+  },
+  "result": {
+    "section": {
+      "title": "Result panel"
+    },
+    "status": {
+      "title": "Selection status"
+    },
+    "ready": "Ready.",
+    "fallback_name": "friend",
+    "short": "Hello, {{name}}. Notifications are {{notify}}.",
+    "detailed": "Hello, {{name}}. Notes: {{notes}}. Notifications are {{notify}}. Shared Flutter token primitives are active.",
+    "notify": {
+      "on": "enabled",
+      "off": "disabled"
+    },
+    "notes": {
+      "empty": "none"
+    }
+  },
+  "list": {
+    "section": {
+      "title": "Searchable list pattern"
+    },
+    "search": {
+      "placeholder": "Search patterns"
+    },
+    "aria": "Pattern result list",
+    "empty": {
+      "title": "No matches",
+      "description": "Try another query to filter the list."
+    },
+    "badge": "Pattern",
+    "summary": "{{count}} visible",
+    "selected": "Selected item: {{item}}.",
+    "items": {
+      "calculator": {
+        "title": "Calculator flow",
+        "subtitle": "Inputs, validation, and computed output."
+      },
+      "settings": {
+        "title": "Settings screen",
+        "subtitle": "Grouped controls with clear state labels."
+      },
+      "report": {
+        "title": "Result report",
+        "subtitle": "Summary cards and expandable detail sections."
+      },
+      "quick_actions": {
+        "title": "Action shortcuts",
+        "subtitle": "Keyboard-friendly rows with focused affordances."
+      }
+    }
+  }
+}

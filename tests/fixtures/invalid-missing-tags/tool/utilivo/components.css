@@ -1,0 +1,167 @@
+/* ToolPage: .uv-tool-page (in layout.css) */
+/* ToolCard */
+.uv-card,
+.uv-tool-card {
+  background: var(--uv-color-surface);
+  border: 1px solid var(--uv-color-outline);
+  border-radius: var(--uv-radius-lg);
+  padding: var(--uv-space-4);
+  box-shadow: var(--uv-shadow-none);
+}
+
+/* ToolSection */
+.uv-section,
+.uv-tool-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--uv-space-4);
+}
+
+.uv-section__title {
+  margin: 0;
+  font-size: var(--uv-font-size-body-lg);
+  font-weight: var(--uv-font-weight-headline-sm);
+  color: var(--uv-color-text);
+}
+
+.uv-section__description {
+  margin: calc(var(--uv-space-2) * -1) 0 0;
+  color: var(--uv-color-muted);
+  font-size: var(--uv-font-size-body-md);
+}
+
+.uv-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--uv-space-2);
+}
+
+.uv-field__label {
+  font-size: var(--uv-font-size-label-lg);
+  font-weight: var(--uv-font-weight-label-lg);
+  color: var(--uv-color-text);
+}
+
+.uv-field__help {
+  color: var(--uv-color-muted);
+  font-size: var(--uv-font-size-body-sm);
+}
+
+/* ToolButton */
+.uv-button,
+.uv-tool-button {
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: var(--uv-radius-pill);
+  min-height: 40px;
+  padding: var(--uv-space-2) var(--uv-space-4);
+  background: var(--uv-color-primary);
+  color: var(--uv-color-on-primary);
+  cursor: pointer;
+  font-size: var(--uv-font-size-label-lg);
+  font-weight: var(--uv-font-weight-label-lg);
+  box-shadow: var(--uv-shadow-none);
+  transition: background-color 120ms ease, filter 120ms ease,
+    transform 120ms ease;
+}
+
+.uv-button:hover {
+  filter: brightness(1.05);
+}
+
+.uv-button:active {
+  transform: translateY(1px);
+}
+
+.uv-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.uv-button--secondary {
+  background: transparent;
+  color: var(--uv-color-text);
+  border-color: var(--uv-color-outline);
+}
+
+.uv-button--danger {
+  background: var(--uv-color-error);
+  color: var(--uv-color-on-error);
+}
+
+/* ToolInput */
+.uv-input,
+.uv-tool-input {
+  width: 100%;
+  border: 1px solid var(--uv-color-outline);
+  border-radius: var(--uv-radius-md);
+  min-height: 44px;
+  padding: var(--uv-space-2) var(--uv-space-3);
+  background: var(--uv-color-surface-alt);
+  color: var(--uv-color-text);
+  font-size: var(--uv-font-size-body-md);
+}
+
+.uv-input:focus {
+  outline: 2px solid var(--uv-color-primary);
+  outline-offset: 1px;
+}
+
+/* ToolSelect */
+.uv-select,
+.uv-tool-select {
+  width: 100%;
+  border: 1px solid var(--uv-color-outline);
+  border-radius: var(--uv-radius-md);
+  min-height: 44px;
+  padding: var(--uv-space-2) var(--uv-space-3);
+  background: var(--uv-color-surface-alt);
+  color: var(--uv-color-text);
+  font-size: var(--uv-font-size-body-md);
+}
+
+.uv-select:focus {
+  outline: 2px solid var(--uv-color-primary);
+  outline-offset: 1px;
+}
+
+/* ToolResult */
+.uv-result,
+.uv-tool-result {
+  border-radius: var(--uv-radius-md);
+  border: 1px solid var(--uv-color-outline);
+  background: var(--uv-color-surface-alt);
+  padding: var(--uv-space-3);
+  color: var(--uv-color-text);
+  white-space: pre-wrap;
+  font-size: var(--uv-font-size-body-md);
+}
+
+/* EmptyState */
+.uv-empty-state,
+.uv-empty {
+  border-radius: var(--uv-radius-md);
+  border: 1px dashed var(--uv-color-outline);
+  background: var(--uv-color-surface);
+  padding: var(--uv-space-4);
+  color: var(--uv-color-muted);
+  text-align: center;
+}
+
+/* ErrorState */
+.uv-error-state,
+.uv-error {
+  border-radius: var(--uv-radius-md);
+  border: 1px solid var(--uv-color-error);
+  background: var(--uv-color-surface);
+  padding: var(--uv-space-4);
+  color: var(--uv-color-text);
+}
+
+.uv-error-state__title {
+  margin: 0 0 var(--uv-space-2);
+  color: var(--uv-color-error);
+  font-size: var(--uv-font-size-body-lg);
+  font-weight: var(--uv-font-weight-headline-sm);
+}

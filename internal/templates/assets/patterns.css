@@ -1,0 +1,124 @@
+.uv-pattern-settings {
+  display: grid;
+  gap: var(--uv-space-4);
+}
+
+.uv-pattern-settings__group {
+  border: 1px solid var(--uv-border-subtle);
+  border-radius: var(--uv-radius-lg);
+  padding: var(--uv-space-4);
+  background: var(--uv-surface-raised);
+  display: grid;
+  gap: var(--uv-space-3);
+}
+
+.uv-pattern-form,
+.uv-pattern-calculator {
+  display: grid;
+  gap: var(--uv-space-4);
+}
+
+.uv-pattern-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--uv-space-2);
+  flex-wrap: wrap;
+}
+
+.uv-pattern-results {
+  display: grid;
+  gap: var(--uv-space-3);
+}
+
+.uv-pattern-results__headline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--uv-space-3);
+}
+
+.uv-pattern-dashboard {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--uv-space-3);
+}
+
+.uv-pattern-dashboard__stat {
+  border: 1px solid var(--uv-border-subtle);
+  border-radius: var(--uv-radius-lg);
+  padding: var(--uv-space-3);
+  background: var(--uv-surface-raised);
+  display: grid;
+  gap: var(--uv-space-1);
+}
+
+.uv-pattern-search-list {
+  display: grid;
+  gap: var(--uv-space-3);
+}
+
+.uv-pattern-search-list__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--uv-space-2);
+  flex-wrap: wrap;
+}
+
+.uv-pattern-search-list__body {
+  border: 1px solid var(--uv-border-subtle);
+  border-radius: var(--uv-radius-lg);
+  background: var(--uv-surface-base);
+  overflow: hidden;
+}
+
+.uv-pattern-detail {
+  display: grid;
+  gap: var(--uv-space-3);
+}
+
+.uv-pattern-detail__section {
+  border: 1px solid var(--uv-border-subtle);
+  border-radius: var(--uv-radius-md);
+  background: var(--uv-surface-raised);
+  padding: var(--uv-space-3);
+  display: grid;
+  gap: var(--uv-space-2);
+}
+
+.uv-action-bar,
+.uv-pattern-action-bar {
+  position: sticky;
+  bottom: 0;
+  inset-inline: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--uv-space-2);
+  padding: var(--uv-space-3);
+  border-top: 1px solid var(--uv-border-subtle);
+  background: color-mix(in srgb, var(--uv-surface-page) 92%, transparent);
+  backdrop-filter: blur(5px);
+}
+
+@media (max-width: 1024px) {
+  .uv-pattern-dashboard {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .uv-pattern-dashboard {
+    grid-template-columns: 1fr;
+  }
+
+  .uv-action-bar,
+  .uv-pattern-action-bar,
+  .uv-pattern-form__actions {
+    justify-content: stretch;
+  }
+
+  .uv-action-bar > *,
+  .uv-pattern-action-bar > *,
+  .uv-pattern-form__actions > * {
+    width: 100%;
+  }
+}

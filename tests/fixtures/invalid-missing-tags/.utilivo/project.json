@@ -1,0 +1,6 @@
+{
+  "project_type": "utilivo-plugin",
+  "slug": "invalid-missing-tags",
+  "sdk": "utilivo-sdk",
+  "schema_version": 1
+}

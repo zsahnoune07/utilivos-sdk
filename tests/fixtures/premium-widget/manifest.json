@@ -1,0 +1,35 @@
+{
+  "id": "com.utilivo.plugin.premium-widget",
+  "name": "Pro Widget",
+  "slug": "premium-widget",
+  "version": "2.1.0",
+  "description": "A Pro-tier widget fixture plugin.",
+  "author": "Fixture Author",
+  "entry": "tool/index.html",
+  "icon": "tool/assets/icon.png",
+  "thumb": "tool/assets/thumb.png",
+  "category": "productivity",
+  "tags": [
+    "fixture",
+    "premium",
+    "widget"
+  ],
+  "tier": "premium",
+  "permissions": [
+    "storage",
+    "notifications"
+  ],
+  "ui_type": "widget",
+  "api_version": "1",
+  "screenshots": [
+    "tool/assets/screenshots/home.png"
+  ],
+  "min_app_version": "1.0.0",
+  "locales": [
+    "en"
+  ],
+  "default_locale": "en",
+  "manifest_schema_version": 1,
+  "design_system_version": 1,
+  "supports_dark_mode": true
+}

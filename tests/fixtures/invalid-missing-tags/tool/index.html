@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en" data-i18n-document-title="page.meta.title">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title></title>
+    <link rel="stylesheet" href="./utilivo/base.css" />
+    <link rel="stylesheet" href="./utilivo/layout.css" />
+    <link rel="stylesheet" href="./utilivo/components.css" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body class="uv-tool-page">
+    <main class="uv-tool-page__content">
+      <header class="uv-tool-page__header">
+        <h1 class="uv-tool-page__title" data-i18n="page.title"></h1>
+        <p class="uv-tool-page__subtitle" data-i18n="page.subtitle"></p>
+      </header>
+      <section class="uv-card uv-section">
+        <h2 class="uv-section__title" data-i18n="example.section.title"></h2>
+        <p class="uv-section__description" data-i18n="example.section.description"></p>
+        <label class="uv-field">
+          <span class="uv-field__label" data-i18n="form.name.label"></span>
+          <input
+            id="name"
+            class="uv-input"
+            type="text"
+            data-i18n-placeholder="form.name.placeholder"
+          />
+        </label>
+        <label class="uv-field">
+          <span class="uv-field__label" data-i18n="form.tone.label"></span>
+          <select id="tone" class="uv-select">
+            <option value="short" data-i18n="form.tone.short"></option>
+            <option value="detailed" data-i18n="form.tone.detailed"></option>
+          </select>
+        </label>
+        <div class="uv-cluster">
+          <button id="ping" class="uv-button" type="button" data-i18n="actions.ping"></button>
+          <button
+            id="clear"
+            class="uv-button uv-button--secondary"
+            type="button"
+            data-i18n="actions.clear"
+          ></button>
+        </div>
+        <pre id="output" class="uv-result"></pre>
+      </section>
+    </main>
+    <script src="./utilivo/tool.js"></script>
+    <script src="./main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,36 @@
+{
+  "page": {
+    "meta": {
+      "title": "Invalid Tier"
+    },
+    "title": "Invalid Tier",
+    "subtitle": "Plugin scaffold created by utilivo-sdk."
+  },
+  "example": {
+    "section": {
+      "title": "Example Tool",
+      "description": "Host-provided design tokens and localized strings are already wired in."
+    }
+  },
+  "form": {
+    "name": {
+      "label": "Display name",
+      "placeholder": "Ada Lovelace"
+    },
+    "tone": {
+      "label": "Response style",
+      "short": "Short",
+      "detailed": "Detailed"
+    }
+  },
+  "actions": {
+    "ping": "Ping",
+    "clear": "Clear"
+  },
+  "result": {
+    "ready": "Ready.",
+    "fallback_name": "friend",
+    "short": "Hello, {{name}}. Shared tokens are active.",
+    "detailed": "Hello, {{name}}. This plugin is running inside the Utilivo host shell and rendering with shared Flutter design tokens."
+  }
+}
