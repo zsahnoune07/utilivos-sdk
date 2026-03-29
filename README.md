@@ -35,7 +35,7 @@ utilivo build
 
 ## Command summary
 
-- `utilivo create <plugin-dir> [--template basic|widget]`
+- `utilivo create <plugin-dir> [--template basic|widget] [--runtime-mode bundled|host]`
 - `utilivo run [--dir path] [--host 127.0.0.1] [--port 5173|0] [--no-open] [--theme system|light|dark]`
 - `utilivo verify [--json] [--strict] [--dir path]`
 - `utilivo test [--json] [--filter all|builtin|external] [--dir path]`
@@ -46,7 +46,7 @@ utilivo build
 - `utilivo doctor [--json]`
 - `utilivo keygen [--out dir] [--name prefix]`
 - `utilivo clean [--dir path]`
-- `utilivo manifest lint|format|bump`
+- `utilivo manifest lint|format|bump|update|sync` (run from plugin root, or `--dir path`; `update` and `sync` add missing manifest keys; `--dry-run` previews changes)
 
 Full command docs: [`docs/COMMANDS.md`](docs/COMMANDS.md)
 UI framework docs: [`docs/UI_FRAMEWORK.md`](docs/UI_FRAMEWORK.md)
@@ -59,11 +59,12 @@ UI framework docs: [`docs/UI_FRAMEWORK.md`](docs/UI_FRAMEWORK.md)
 
 ```bash
 sudo apt update
-sudo apt install -y golang-go make dpkg-dev
+sudo apt install -y golang-go make dpkg-dev pngquant
 go version
 ```
 
 `utilivo-sdk` expects Go 1.22 or newer. If `go version` reports an older release, install a newer Go toolchain first and make sure that version is the one on your `PATH`.
+`pngquant` is required for manifest icon PNG compression during `utilivo pack`/`utilivo build`.
 
 ### 2. Build the CLI
 
@@ -361,7 +362,7 @@ Current allowlists:
 `utilivo pack` and `utilivo build` honor `build.ignore` when it exists.
 Use one relative path per line to keep source-only files out of the final `.ubb`.
 The default scaffold excludes `README.md` and `PLAN.md`.
-When the manifest icon is a PNG, packaging normalizes it to `512x512` and recompresses it inside the archive without mutating the source file.
+When the manifest icon is a PNG, packaging scales it down (if needed) so the longest side is at most `512px` (aspect ratio preserved), recompresses it inside the archive, and does not change the source file on disk.
 
 ## Environment variables
 

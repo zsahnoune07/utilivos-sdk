@@ -23,6 +23,7 @@ type Options struct {
 	Description string
 	Tags        []string
 	Template    string
+	RuntimeMode string
 }
 
 func Create(opts Options) (string, error) {
@@ -66,6 +67,10 @@ func Create(opts Options) (string, error) {
 	sort.Strings(opts.Tags)
 
 	m := manifest.Default(opts.Name, opts.Slug, opts.Author)
+	if mode := manifest.RuntimeModeOrDefault(opts.RuntimeMode); mode == "host" {
+		m.RuntimeMode = "host"
+		m.RuntimeContractVersion = 1
+	}
 	template := strings.TrimSpace(strings.ToLower(opts.Template))
 	if template == "" {
 		template = "basic"
@@ -94,12 +99,14 @@ func Create(opts Options) (string, error) {
 	}
 
 	dirs := []string{
-		"tool/utilivo",
 		"tool/locales",
 		"tool/assets/screenshots",
 		"tests",
 		"dist",
 		".utilivo",
+	}
+	if manifest.RuntimeModeOrDefault(m.RuntimeMode) == "bundled" {
+		dirs = append(dirs, "tool/utilivo")
 	}
 	for _, dir := range dirs {
 		if err := os.MkdirAll(filepath.Join(absTarget, dir), 0o755); err != nil {
@@ -111,25 +118,27 @@ func Create(opts Options) (string, error) {
 		return "", err
 	}
 	files := map[string]string{
-		"AGENTS.md":                   templates.AgentsMarkdown(opts.Name, opts.Slug),
-		"build.ignore":                templates.BuildIgnore(),
-		"README.md":                   templates.ReadmeMarkdown(opts.Name, opts.Slug),
-		"PLAN.md":                     templates.PlanMarkdown(opts.Name, opts.Slug),
-		".env.example":                templates.EnvExample(),
-		"tool/index.html":             templates.IndexHTML(opts.Name),
-		"tool/main.js":                templates.MainJS(),
-		"tool/style.css":              templates.StylesCSS(),
-		"tool/locales/en.json":        templates.LocaleENJSON(opts.Name),
-		"tool/utilivo/base.css":       templates.BaseCSS(),
-		"tool/utilivo/components.css": templates.ComponentsCSS(),
-		"tool/utilivo/layout.css":     templates.LayoutCSS(),
-		"tool/utilivo/utilities.css":  templates.UtilitiesCSS(),
-		"tool/utilivo/patterns.css":   templates.PatternsCSS(),
-		"tool/utilivo/tool.js":        templates.ToolJS(),
-		"tests/manifest.test.json":    templates.ManifestTestJSON(),
-		"tests/structure.test.yaml":   templates.StructureTestYAML(),
-		".utilivo/project.json":       templates.ProjectJSON(opts.Slug),
-		".gitignore":                  defaultGitignore(),
+		"AGENTS.md":                 templates.AgentsMarkdown(opts.Name, opts.Slug),
+		"build.ignore":              templates.BuildIgnore(),
+		"README.md":                 templates.ReadmeMarkdown(opts.Name, opts.Slug),
+		"PLAN.md":                   templates.PlanMarkdown(opts.Name, opts.Slug),
+		".env.example":              templates.EnvExample(),
+		"tool/index.html":           templates.IndexHTML(opts.Name, manifest.RuntimeModeOrDefault(m.RuntimeMode)),
+		"tool/main.js":              templates.MainJS(),
+		"tool/style.css":            templates.StylesCSS(),
+		"tool/locales/en.json":      templates.LocaleENJSON(opts.Name),
+		"tests/manifest.test.json":  templates.ManifestTestJSON(),
+		"tests/structure.test.yaml": templates.StructureTestYAML(manifest.RuntimeModeOrDefault(m.RuntimeMode)),
+		".utilivo/project.json":     templates.ProjectJSON(opts.Slug),
+		".gitignore":                defaultGitignore(),
+	}
+	if manifest.RuntimeModeOrDefault(m.RuntimeMode) == "bundled" {
+		files["tool/utilivo/base.css"] = templates.BaseCSS()
+		files["tool/utilivo/components.css"] = templates.ComponentsCSS()
+		files["tool/utilivo/layout.css"] = templates.LayoutCSS()
+		files["tool/utilivo/utilities.css"] = templates.UtilitiesCSS()
+		files["tool/utilivo/patterns.css"] = templates.PatternsCSS()
+		files["tool/utilivo/tool.js"] = templates.ToolJS()
 	}
 	for rel, content := range files {
 		path := filepath.Join(absTarget, rel)

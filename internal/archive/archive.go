@@ -101,6 +101,22 @@ func CollectPackageFiles(root string) ([]Entry, error) {
 	return entries, nil
 }
 
+// DropToolUtilivoForHostMode removes tool/utilivo/* from the package when runtime_mode is host.
+// Plugins may keep that directory for styled local dev (utilivo run injects these assets); it must not ship in the .ubb.
+func DropToolUtilivoForHostMode(entries []Entry, hostMode bool) []Entry {
+	if !hostMode {
+		return entries
+	}
+	out := make([]Entry, 0, len(entries))
+	for _, e := range entries {
+		if strings.HasPrefix(e.RelPath, "tool/utilivo/") {
+			continue
+		}
+		out = append(out, e)
+	}
+	return out
+}
+
 type buildIgnore struct {
 	exact       map[string]struct{}
 	directories []string

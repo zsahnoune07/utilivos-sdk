@@ -110,6 +110,7 @@ func runCreate(args []string, stdout, _ io.Writer) (int, error) {
 	description := fs.String("description", "", "Plugin description")
 	tags := fs.String("tags", "", "Comma-separated tags")
 	template := fs.String("template", "basic", "Template type (basic|widget)")
+	runtimeMode := fs.String("runtime-mode", "bundled", "Runtime mode (bundled|host)")
 	targetPath, parseArgs := splitLeadingPositional(args)
 	if err := fs.Parse(parseArgs); err != nil {
 		return util.ExitUsage, err
@@ -132,6 +133,7 @@ func runCreate(args []string, stdout, _ io.Writer) (int, error) {
 		Author:      strings.TrimSpace(*author),
 		Description: strings.TrimSpace(*description),
 		Template:    strings.TrimSpace(*template),
+		RuntimeMode: strings.TrimSpace(*runtimeMode),
 	}
 	if trimmed := strings.TrimSpace(*tags); trimmed != "" {
 		parts := strings.Split(trimmed, ",")
@@ -544,14 +546,26 @@ func runClean(args []string, stdout, _ io.Writer) (int, error) {
 
 func runManifest(args []string, stdout, _ io.Writer) (int, error) {
 	if len(args) == 0 {
-		return util.ExitUsage, errors.New("usage: utilivo manifest <lint|format|bump>")
+		return util.ExitUsage, errors.New("usage: utilivo manifest <lint|format|bump|update|sync>")
 	}
 	sub := args[0]
 	subArgs := args[1:]
-	mPath := "manifest.json"
 
 	switch sub {
 	case "lint":
+		fs := flag.NewFlagSet("manifest lint", flag.ContinueOnError)
+		fs.SetOutput(io.Discard)
+		dir := fs.String("dir", ".", "Plugin root (folder with manifest.json); default is current directory")
+		if err := fs.Parse(subArgs); err != nil {
+			return util.ExitUsage, err
+		}
+		if fs.NArg() != 0 {
+			return util.ExitUsage, errors.New("usage: utilivo manifest lint [--dir DIR]")
+		}
+		mPath, err := manifestPathInDir(*dir)
+		if err != nil {
+			return util.ExitUsage, err
+		}
 		m, err := manifest.Load(mPath)
 		if err != nil {
 			return util.ExitValidationError, err
@@ -562,6 +576,19 @@ func runManifest(args []string, stdout, _ io.Writer) (int, error) {
 		}
 		return r.ExitCode(false), nil
 	case "format":
+		fs := flag.NewFlagSet("manifest format", flag.ContinueOnError)
+		fs.SetOutput(io.Discard)
+		dir := fs.String("dir", ".", "Plugin root (folder with manifest.json); default is current directory")
+		if err := fs.Parse(subArgs); err != nil {
+			return util.ExitUsage, err
+		}
+		if fs.NArg() != 0 {
+			return util.ExitUsage, errors.New("usage: utilivo manifest format [--dir DIR]")
+		}
+		mPath, err := manifestPathInDir(*dir)
+		if err != nil {
+			return util.ExitUsage, err
+		}
 		m, err := manifest.Load(mPath)
 		if err != nil {
 			return util.ExitValidationError, err
@@ -569,17 +596,27 @@ func runManifest(args []string, stdout, _ io.Writer) (int, error) {
 		if err := manifest.Save(mPath, m); err != nil {
 			return util.ExitUsage, err
 		}
-		fmt.Fprintln(stdout, "manifest.json formatted")
+		fmt.Fprintf(stdout, "%s formatted\n", mPath)
 		return util.ExitOK, nil
 	case "bump":
-		if len(subArgs) != 1 {
-			return util.ExitUsage, errors.New("usage: utilivo manifest bump <patch|minor|major>")
+		fs := flag.NewFlagSet("manifest bump", flag.ContinueOnError)
+		fs.SetOutput(io.Discard)
+		dir := fs.String("dir", ".", "Plugin root (folder with manifest.json); default is current directory")
+		if err := fs.Parse(subArgs); err != nil {
+			return util.ExitUsage, err
+		}
+		if fs.NArg() != 1 {
+			return util.ExitUsage, errors.New("usage: utilivo manifest bump <patch|minor|major> [--dir DIR]")
+		}
+		mPath, err := manifestPathInDir(*dir)
+		if err != nil {
+			return util.ExitUsage, err
 		}
 		m, err := manifest.Load(mPath)
 		if err != nil {
 			return util.ExitValidationError, err
 		}
-		version, err := manifest.BumpVersion(m.Version, subArgs[0])
+		version, err := manifest.BumpVersion(m.Version, fs.Arg(0))
 		if err != nil {
 			return util.ExitUsage, err
 		}
@@ -589,9 +626,63 @@ func runManifest(args []string, stdout, _ io.Writer) (int, error) {
 		}
 		fmt.Fprintf(stdout, "manifest version bumped to %s\n", version)
 		return util.ExitOK, nil
+	case "update", "sync":
+		fs := flag.NewFlagSet("manifest "+sub, flag.ContinueOnError)
+		fs.SetOutput(io.Discard)
+		dir := fs.String("dir", ".", "Plugin root (folder with manifest.json); default is current directory")
+		dry := fs.Bool("dry-run", false, "List fields that would be added without writing manifest.json")
+		if err := fs.Parse(subArgs); err != nil {
+			return util.ExitUsage, err
+		}
+		if fs.NArg() != 0 {
+			return util.ExitUsage, errors.New("usage: utilivo manifest update|sync [--dir DIR] [--dry-run]")
+		}
+		mPath, err := manifestPathInDir(*dir)
+		if err != nil {
+			return util.ExitUsage, err
+		}
+		m, err := manifest.Load(mPath)
+		if err != nil {
+			return util.ExitValidationError, err
+		}
+		merged, added := manifest.MergeLatestRequirements(m)
+		if *dry {
+			if len(added) == 0 {
+				fmt.Fprintln(stdout, "manifest already satisfies latest requirements (no missing fields)")
+				return util.ExitOK, nil
+			}
+			fmt.Fprintln(stdout, "would add or set:")
+			for _, field := range added {
+				fmt.Fprintf(stdout, "  %s\n", field)
+			}
+			return util.ExitOK, nil
+		}
+		if len(added) == 0 {
+			fmt.Fprintln(stdout, "manifest already satisfies latest requirements")
+			return util.ExitOK, nil
+		}
+		if err := manifest.Save(mPath, merged); err != nil {
+			return util.ExitUsage, err
+		}
+		fmt.Fprintf(stdout, "updated %s\n", mPath)
+		for _, field := range added {
+			fmt.Fprintf(stdout, "  + %s\n", field)
+		}
+		return util.ExitOK, nil
 	default:
 		return util.ExitUsage, fmt.Errorf("unknown manifest subcommand: %s", sub)
 	}
+}
+
+func manifestPathInDir(dir string) (string, error) {
+	base, err := filepath.Abs(strings.TrimSpace(dir))
+	if err != nil {
+		return "", err
+	}
+	if base == "" {
+		return "", errors.New("manifest --dir is empty")
+	}
+	return filepath.Join(base, "manifest.json"), nil
 }
 
 func runVersion(args []string, stdout, _ io.Writer) (int, error) {
@@ -633,7 +724,7 @@ Commands:
   doctor     Check local SDK environment
   keygen     Generate Ed25519 dev signing keys
   clean      Remove generated dist artifacts
-  manifest   Manifest helpers (lint|format|bump)
+  manifest   Manifest tools (lint, format, bump, update|sync — run from plugin root, or use --dir)
   version    Print CLI version
 
 Aliases:

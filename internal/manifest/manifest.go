@@ -9,23 +9,66 @@ import (
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/utilivo/utilivo-sdk/internal/util"
 )
 
 var (
-	slugPattern = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)   // nolint:gochecknoglobals
-	idPattern   = regexp.MustCompile(`^[a-z0-9]+(?:\.[a-z0-9-]+)+$`) // nolint:gochecknoglobals
-	tagPattern  = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{0,63}$`)    // nolint:gochecknoglobals
-	apiPattern  = regexp.MustCompile(`^[0-9]+(?:\.[0-9]+)?$`)        // nolint:gochecknoglobals
-	localeRegex = regexp.MustCompile(`^[a-z]{2}(?:-[A-Z]{2})?$`)     // nolint:gochecknoglobals
-	pathPattern = regexp.MustCompile(`^[^\x00]+$`)                   // nolint:gochecknoglobals
-	categories  = []string{"productivity", "utilities", "developer-tools", "writing", "design", "automation", "finance", "health", "education", "media", "shopping", "communication", "lifestyle", "business", "travel", "custom"}
-	permissions = []string{"storage", "clipboard.read", "clipboard.write", "network", "notifications", "camera", "microphone", "share", "filesystem.read", "filesystem.write"}
-	uiTypes     = []string{"page", "widget", "modal", "panel", "background"}
-	tiers       = []string{"free", "premium"}
+	slugPattern  = regexp.MustCompile(`^[a-z0-9]+(?:-[a-z0-9]+)*$`)   // nolint:gochecknoglobals
+	idPattern    = regexp.MustCompile(`^[a-z0-9]+(?:\.[a-z0-9-]+)+$`) // nolint:gochecknoglobals
+	tagPattern   = regexp.MustCompile(`^[a-z0-9][a-z0-9-]{0,63}$`)    // nolint:gochecknoglobals
+	apiPattern   = regexp.MustCompile(`^[0-9]+(?:\.[0-9]+)?$`)        // nolint:gochecknoglobals
+	localeRegex  = regexp.MustCompile(`^[a-z]{2}(?:-[A-Z]{2})?$`)     // nolint:gochecknoglobals
+	pathPattern  = regexp.MustCompile(`^[^\x00]+$`)                   // nolint:gochecknoglobals
+	categories   = []string{"productivity", "utilities", "developer-tools", "writing", "design", "automation", "finance", "health", "education", "media", "shopping", "communication", "lifestyle", "business", "travel", "custom"}
+	permissions  = []string{"storage", "clipboard.read", "clipboard.write", "network", "notifications", "camera", "microphone", "share", "filesystem.read", "filesystem.write"}
+	uiTypes      = []string{"page", "widget", "modal", "panel", "background"}
+	tiers        = []string{"free", "premium"}
+	runtimeModes = []string{"bundled", "host"}
 )
+
+// CurrentRuntimeContractVersion is the contract revision the SDK and host use for runtime_mode=host.
+const CurrentRuntimeContractVersion = 1
+
+// flexInt accepts JSON numbers or quoted numeric strings (e.g. "1") for hand-edited manifests.
+type flexInt int
+
+func (f *flexInt) UnmarshalJSON(data []byte) error {
+	data = bytes.TrimSpace(data)
+	if len(data) == 0 || string(data) == "null" {
+		*f = 0
+		return nil
+	}
+	if data[0] == '"' {
+		var s string
+		if err := json.Unmarshal(data, &s); err != nil {
+			return err
+		}
+		s = strings.TrimSpace(s)
+		if s == "" {
+			*f = 0
+			return nil
+		}
+		n, err := strconv.Atoi(s)
+		if err != nil {
+			return fmt.Errorf("expected integer, got %q", s)
+		}
+		*f = flexInt(n)
+		return nil
+	}
+	var n int
+	if err := json.Unmarshal(data, &n); err != nil {
+		return err
+	}
+	*f = flexInt(n)
+	return nil
+}
+
+func (f flexInt) MarshalJSON() ([]byte, error) {
+	return json.Marshal(int(f))
+}
 
 type ContentSecurityPolicy struct {
 	ScriptSrc  []string `json:"script_src,omitempty"`
@@ -34,33 +77,35 @@ type ContentSecurityPolicy struct {
 }
 
 type Manifest struct {
-	ID                    string                 `json:"id"`
-	Name                  string                 `json:"name"`
-	Slug                  string                 `json:"slug"`
-	Version               string                 `json:"version"`
-	Description           string                 `json:"description"`
-	Author                string                 `json:"author"`
-	Entry                 string                 `json:"entry"`
-	Icon                  string                 `json:"icon"`
-	Thumb                 string                 `json:"thumb"`
-	Category              string                 `json:"category"`
-	Tags                  []string               `json:"tags"`
-	Tier                  string                 `json:"tier"`
-	Permissions           []string               `json:"permissions"`
-	UIType                string                 `json:"ui_type"`
-	APIVersion            string                 `json:"api_version"`
-	Screenshots           []string               `json:"screenshots"`
-	MinAppVersion         string                 `json:"min_app_version"`
-	Homepage              string                 `json:"homepage,omitempty"`
-	Repository            string                 `json:"repository,omitempty"`
-	License               string                 `json:"license,omitempty"`
-	Keywords              []string               `json:"keywords,omitempty"`
-	Locales               []string               `json:"locales,omitempty"`
-	DefaultLocale         string                 `json:"default_locale,omitempty"`
-	ContentSecurityPolicy *ContentSecurityPolicy `json:"content_security_policy,omitempty"`
-	ManifestSchemaVersion int                    `json:"manifest_schema_version,omitempty"`
-	DesignSystemVersion   int                    `json:"design_system_version"`
-	SupportsDarkMode      bool                   `json:"supports_dark_mode"`
+	ID                     string                 `json:"id"`
+	Name                   string                 `json:"name"`
+	Slug                   string                 `json:"slug"`
+	Version                string                 `json:"version"`
+	Description            string                 `json:"description"`
+	Author                 string                 `json:"author"`
+	Entry                  string                 `json:"entry"`
+	Icon                   string                 `json:"icon"`
+	Thumb                  string                 `json:"thumb"`
+	Category               string                 `json:"category"`
+	Tags                   []string               `json:"tags"`
+	Tier                   string                 `json:"tier"`
+	Permissions            []string               `json:"permissions"`
+	UIType                 string                 `json:"ui_type"`
+	APIVersion             string                 `json:"api_version"`
+	Screenshots            []string               `json:"screenshots"`
+	MinAppVersion          string                 `json:"min_app_version"`
+	Homepage               string                 `json:"homepage,omitempty"`
+	Repository             string                 `json:"repository,omitempty"`
+	License                string                 `json:"license,omitempty"`
+	Keywords               []string               `json:"keywords,omitempty"`
+	Locales                []string               `json:"locales,omitempty"`
+	DefaultLocale          string                 `json:"default_locale,omitempty"`
+	ContentSecurityPolicy  *ContentSecurityPolicy `json:"content_security_policy,omitempty"`
+	ManifestSchemaVersion  flexInt                `json:"manifest_schema_version,omitempty"`
+	DesignSystemVersion    flexInt                `json:"design_system_version"`
+	SupportsDarkMode       bool                   `json:"supports_dark_mode"`
+	RuntimeMode            string                 `json:"runtime_mode,omitempty"`
+	RuntimeContractVersion flexInt                `json:"runtime_contract_version,omitempty"`
 }
 
 func AllowedCategories() []string {
@@ -107,7 +152,144 @@ func Default(pluginName, slug, author string) Manifest {
 		ManifestSchemaVersion: 1,
 		DesignSystemVersion:   1,
 		SupportsDarkMode:      true,
+		RuntimeMode:           "bundled",
 	}
+}
+
+func RuntimeModeOrDefault(mode string) string {
+	if strings.TrimSpace(mode) == "" {
+		return "bundled"
+	}
+	return strings.ToLower(strings.TrimSpace(mode))
+}
+
+// MergeLatestRequirements returns a copy of m with fields required by the current manifest
+// contract filled from defaults when they are missing or invalid for validation (for example
+// empty slices, zero schema versions, or runtime_mode host without a contract version).
+// It does not overwrite non-empty user values. The second return lists JSON field names
+// that were added or changed.
+func MergeLatestRequirements(m Manifest) (Manifest, []string) {
+	var added []string
+	note := func(field string) {
+		added = append(added, field)
+	}
+	out := m
+
+	plugName := strings.TrimSpace(out.Name)
+	if plugName == "" {
+		plugName = "Plugin"
+	}
+	slugForDef := strings.TrimSpace(out.Slug)
+	if slugForDef == "" {
+		slugForDef = "plugin"
+	}
+	auth := strings.TrimSpace(out.Author)
+	if auth == "" {
+		auth = "Unknown"
+	}
+	def := Default(plugName, slugForDef, auth)
+
+	if strings.TrimSpace(out.ID) == "" {
+		slugTrim := strings.TrimSpace(out.Slug)
+		if slugTrim != "" && IsValidSlug(slugTrim) {
+			out.ID = fmt.Sprintf("com.utilivo.plugin.%s", slugTrim)
+			note("id")
+		}
+	}
+	if strings.TrimSpace(out.Name) == "" {
+		out.Name = def.Name
+		note("name")
+	}
+	// Do not invent slug when missing; authors must set it explicitly.
+	if strings.TrimSpace(out.Description) == "" {
+		out.Description = def.Description
+		note("description")
+	}
+	if strings.TrimSpace(out.Author) == "" {
+		out.Author = def.Author
+		note("author")
+	}
+	if strings.TrimSpace(out.Version) == "" {
+		out.Version = def.Version
+		note("version")
+	}
+	if strings.TrimSpace(out.Entry) == "" {
+		out.Entry = def.Entry
+		note("entry")
+	}
+	if strings.TrimSpace(out.Icon) == "" {
+		out.Icon = def.Icon
+		note("icon")
+	}
+	if strings.TrimSpace(out.Thumb) == "" {
+		out.Thumb = def.Thumb
+		note("thumb")
+	}
+	if strings.TrimSpace(out.Category) == "" {
+		out.Category = def.Category
+		note("category")
+	}
+	if strings.TrimSpace(out.Tier) == "" {
+		out.Tier = def.Tier
+		note("tier")
+	}
+	if strings.TrimSpace(out.UIType) == "" {
+		out.UIType = def.UIType
+		note("ui_type")
+	}
+	if strings.TrimSpace(out.APIVersion) == "" {
+		out.APIVersion = def.APIVersion
+		note("api_version")
+	}
+	if strings.TrimSpace(out.MinAppVersion) == "" {
+		out.MinAppVersion = def.MinAppVersion
+		note("min_app_version")
+	}
+
+	if out.ManifestSchemaVersion == 0 {
+		out.ManifestSchemaVersion = 1
+		note("manifest_schema_version")
+	}
+	if out.DesignSystemVersion == 0 {
+		out.DesignSystemVersion = 1
+		note("design_system_version")
+	}
+	if !out.SupportsDarkMode {
+		out.SupportsDarkMode = true
+		note("supports_dark_mode")
+	}
+	if strings.TrimSpace(out.RuntimeMode) == "" {
+		out.RuntimeMode = "bundled"
+		note("runtime_mode")
+	}
+	mode := RuntimeModeOrDefault(out.RuntimeMode)
+	if mode == "host" && out.RuntimeContractVersion <= 0 {
+		out.RuntimeContractVersion = CurrentRuntimeContractVersion
+		note("runtime_contract_version")
+	}
+
+	if len(out.Tags) == 0 {
+		out.Tags = append([]string(nil), def.Tags...)
+		note("tags")
+	}
+	if len(out.Permissions) == 0 {
+		out.Permissions = append([]string(nil), def.Permissions...)
+		note("permissions")
+	}
+	if len(out.Screenshots) == 0 {
+		out.Screenshots = append([]string(nil), def.Screenshots...)
+		note("screenshots")
+	}
+	if len(out.Locales) == 0 {
+		out.Locales = append([]string(nil), def.Locales...)
+		note("locales")
+	}
+	if strings.TrimSpace(out.DefaultLocale) == "" {
+		out.DefaultLocale = "en"
+		note("default_locale")
+	}
+
+	return out, added
 }
 
 func Load(path string) (Manifest, error) {
@@ -188,6 +370,13 @@ func Validate(m Manifest) util.Report {
 	}
 	if !apiPattern.MatchString(m.APIVersion) {
 		r.Add(util.SeverityError, "manifest.api_version", "manifest.json", "api_version must be numeric")
+	}
+	mode := RuntimeModeOrDefault(m.RuntimeMode)
+	if !isOneOf(mode, runtimeModes) {
+		r.Add(util.SeverityError, "manifest.runtime_mode", "manifest.json", "runtime_mode must be one of bundled, host")
+	}
+	if mode == "host" && m.RuntimeContractVersion <= 0 {
+		r.Add(util.SeverityError, "manifest.runtime_contract_version", "manifest.json", "runtime_contract_version is required for runtime_mode=host and must be > 0")
 	}
 	if m.DesignSystemVersion == 0 {
 		r.Add(util.SeverityError, "manifest.design_system_version", "manifest.json", "design_system_version is required and must be 1")

@@ -3,6 +3,7 @@ package build_test
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/json"
 	"image"
 	"image/color"
 	"image/png"
@@ -17,6 +18,7 @@ import (
 	"github.com/utilivo/utilivo-sdk/internal/build"
 	"github.com/utilivo/utilivo-sdk/internal/scaffold"
 	"github.com/utilivo/utilivo-sdk/internal/signing"
+	"github.com/utilivo/utilivo-sdk/internal/templates"
 	"github.com/utilivo/utilivo-sdk/internal/util"
 	"github.com/utilivo/utilivo-sdk/internal/verify"
 )
@@ -95,6 +97,59 @@ func TestPackNormalizesRelativeOutDirAgainstProject(t *testing.T) {
 	expectedDist := filepath.Join(project, "artifacts")
 	if artifacts.DistDir != expectedDist {
 		t.Fatalf("expected dist dir %s, got %s", expectedDist, artifacts.DistDir)
+	}
+}
+
+func TestPackHostModeOmitsToolUtilivo(t *testing.T) {
+	t.Parallel()
+	project := filepath.Join(t.TempDir(), "plugin")
+	if _, err := scaffold.Create(scaffold.Options{TargetPath: project}); err != nil {
+		t.Fatalf("scaffold create: %v", err)
+	}
+	manPath := filepath.Join(project, "manifest.json")
+	manRaw, err := os.ReadFile(manPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var man map[string]any
+	if err := json.Unmarshal(manRaw, &man); err != nil {
+		t.Fatal(err)
+	}
+	man["runtime_mode"] = "host"
+	man["runtime_contract_version"] = 1
+	out, err := json.MarshalIndent(man, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(manPath, append(out, '\n'), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(project, "tool/index.html"), []byte(templates.IndexHTML("Pack Host", "host")), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(project, "tests/structure.test.yaml"), []byte(templates.StructureTestYAML("host")), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	v, err := verify.Run(project)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if v.Report.Errors != 0 {
+		t.Fatalf("verify: %d errors", v.Report.Errors)
+	}
+	artifacts, err := build.Pack(project, "")
+	if err != nil {
+		t.Fatalf("pack: %v", err)
+	}
+	zr, err := zip.OpenReader(artifacts.ArchivePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer zr.Close()
+	for _, f := range zr.File {
+		if strings.HasPrefix(f.Name, "tool/utilivo/") {
+			t.Fatalf("host .ubb must not contain %s", f.Name)
+		}
 	}
 }
 
@@ -204,41 +259,128 @@ func TestPackHonorsBuildIgnore(t *testing.T) {
 
 func TestPackOptimizesManifestIconPNG(t *testing.T) {
 	t.Parallel()
-	project := filepath.Join(t.TempDir(), "plugin")
-	if _, err := scaffold.Create(scaffold.Options{TargetPath: project}); err != nil {
-		t.Fatalf("scaffold create: %v", err)
-	}
 
-	iconPath := filepath.Join(project, "tool", "assets", "icon.png")
-	sourceIcon := generateTestIconPNG(t, 1024, 768)
-	if err := os.WriteFile(iconPath, sourceIcon, 0o644); err != nil {
-		t.Fatalf("write icon source: %v", err)
-	}
+	t.Run("large_rectangular_scales_max_edge_to_512", func(t *testing.T) {
+		t.Parallel()
+		project := filepath.Join(t.TempDir(), "plugin")
+		if _, err := scaffold.Create(scaffold.Options{TargetPath: project}); err != nil {
+			t.Fatalf("scaffold create: %v", err)
+		}
+		iconPath := filepath.Join(project, "tool", "assets", "icon.png")
+		sourceIcon := generateTestIconPNG(t, 1024, 768)
+		if err := os.WriteFile(iconPath, sourceIcon, 0o644); err != nil {
+			t.Fatalf("write icon source: %v", err)
+		}
+		artifacts, err := build.Pack(project, "")
+		if err != nil {
+			t.Fatalf("pack: %v", err)
+		}
+		iconBytes := readArchiveEntryBytes(t, artifacts.ArchivePath, "tool/assets/icon.png")
+		iconConfig, err := png.DecodeConfig(bytes.NewReader(iconBytes))
+		if err != nil {
+			t.Fatalf("decode archive icon: %v", err)
+		}
+		if iconConfig.Width != 512 || iconConfig.Height != 384 {
+			t.Fatalf("expected packaged icon 512x384, got %dx%d", iconConfig.Width, iconConfig.Height)
+		}
+		if len(iconBytes) >= len(sourceIcon) {
+			t.Fatalf("expected optimized icon to be smaller than source (%d >= %d)", len(iconBytes), len(sourceIcon))
+		}
+		currentSource, err := os.ReadFile(iconPath)
+		if err != nil {
+			t.Fatalf("read icon source after pack: %v", err)
+		}
+		if !bytes.Equal(currentSource, sourceIcon) {
+			t.Fatal("expected source icon to remain unchanged after pack")
+		}
+	})
 
-	artifacts, err := build.Pack(project, "")
-	if err != nil {
-		t.Fatalf("pack: %v", err)
-	}
+	t.Run("square_scales_to_512_per_edge", func(t *testing.T) {
+		t.Parallel()
+		project := filepath.Join(t.TempDir(), "plugin")
+		if _, err := scaffold.Create(scaffold.Options{TargetPath: project}); err != nil {
+			t.Fatalf("scaffold create: %v", err)
+		}
+		iconPath := filepath.Join(project, "tool", "assets", "icon.png")
+		sourceIcon := generateTestIconPNG(t, 1024, 1024)
+		if err := os.WriteFile(iconPath, sourceIcon, 0o644); err != nil {
+			t.Fatalf("write icon source: %v", err)
+		}
+		artifacts, err := build.Pack(project, "")
+		if err != nil {
+			t.Fatalf("pack: %v", err)
+		}
+		iconBytes := readArchiveEntryBytes(t, artifacts.ArchivePath, "tool/assets/icon.png")
+		iconConfig, err := png.DecodeConfig(bytes.NewReader(iconBytes))
+		if err != nil {
+			t.Fatalf("decode archive icon: %v", err)
+		}
+		if iconConfig.Width != 512 || iconConfig.Height != 512 {
+			t.Fatalf("expected packaged icon 512x512, got %dx%d", iconConfig.Width, iconConfig.Height)
+		}
+	})
 
-	iconBytes := readArchiveEntryBytes(t, artifacts.ArchivePath, "tool/assets/icon.png")
-	iconConfig, err := png.DecodeConfig(bytes.NewReader(iconBytes))
-	if err != nil {
-		t.Fatalf("decode archive icon: %v", err)
-	}
-	if iconConfig.Width != 512 || iconConfig.Height != 512 {
-		t.Fatalf("expected packaged icon to be 512x512, got %dx%d", iconConfig.Width, iconConfig.Height)
-	}
-	if len(iconBytes) >= len(sourceIcon) {
-		t.Fatalf("expected optimized icon to be smaller than source (%d >= %d)", len(iconBytes), len(sourceIcon))
-	}
+	t.Run("small_icon_keeps_dimensions_recompresses", func(t *testing.T) {
+		t.Parallel()
+		project := filepath.Join(t.TempDir(), "plugin")
+		if _, err := scaffold.Create(scaffold.Options{TargetPath: project}); err != nil {
+			t.Fatalf("scaffold create: %v", err)
+		}
+		iconPath := filepath.Join(project, "tool", "assets", "icon.png")
+		sourceIcon := generateTestIconPNG(t, 128, 128)
+		if err := os.WriteFile(iconPath, sourceIcon, 0o644); err != nil {
+			t.Fatalf("write icon source: %v", err)
+		}
+		artifacts, err := build.Pack(project, "")
+		if err != nil {
+			t.Fatalf("pack: %v", err)
+		}
+		iconBytes := readArchiveEntryBytes(t, artifacts.ArchivePath, "tool/assets/icon.png")
+		iconConfig, err := png.DecodeConfig(bytes.NewReader(iconBytes))
+		if err != nil {
+			t.Fatalf("decode archive icon: %v", err)
+		}
+		if iconConfig.Width != 128 || iconConfig.Height != 128 {
+			t.Fatalf("expected packaged icon 128x128, got %dx%d", iconConfig.Width, iconConfig.Height)
+		}
+		if len(iconBytes) >= len(sourceIcon) {
+			t.Fatalf("expected recompressed icon to be smaller than no-compression source (%d >= %d)", len(iconBytes), len(sourceIcon))
+		}
+	})
 
-	currentSource, err := os.ReadFile(iconPath)
-	if err != nil {
-		t.Fatalf("read icon source after pack: %v", err)
-	}
-	if !bytes.Equal(currentSource, sourceIcon) {
-		t.Fatal("expected source icon to remain unchanged after pack")
-	}
+	t.Run("transparent_icon_flattens_on_white_all_pixels_opaque", func(t *testing.T) {
+		t.Parallel()
+		const w, h = 256, 256
+		project := filepath.Join(t.TempDir(), "plugin")
+		if _, err := scaffold.Create(scaffold.Options{TargetPath: project}); err != nil {
+			t.Fatalf("scaffold create: %v", err)
+		}
+		iconPath := filepath.Join(project, "tool", "assets", "icon.png")
+		sourceIcon := generatePartiallyTransparentTestIconPNG(t, w, h)
+		if err := os.WriteFile(iconPath, sourceIcon, 0o644); err != nil {
+			t.Fatalf("write icon source: %v", err)
+		}
+		artifacts, err := build.Pack(project, "")
+		if err != nil {
+			t.Fatalf("pack: %v", err)
+		}
+		iconBytes := readArchiveEntryBytes(t, artifacts.ArchivePath, "tool/assets/icon.png")
+		decoded, err := png.Decode(bytes.NewReader(iconBytes))
+		if err != nil {
+			t.Fatalf("decode archive icon: %v", err)
+		}
+		assertImageFullyOpaque(t, decoded)
+		// Left half was fully transparent → should become white after flatten.
+		r, g, b, _ := decoded.At(w/4, h/2).RGBA()
+		if uint8(r>>8) != 255 || uint8(g>>8) != 255 || uint8(b>>8) != 255 {
+			t.Fatalf("expected transparent region on white, got RGB(%d,%d,%d)", r>>8, g>>8, b>>8)
+		}
+		// Right half was opaque green.
+		r2, g2, b2, _ := decoded.At(w*3/4, h/2).RGBA()
+		if uint8(g2>>8) < 120 || uint8(r2>>8) > 40 || uint8(b2>>8) > 40 {
+			t.Fatalf("expected green region preserved, got RGB(%d,%d,%d)", r2>>8, g2>>8, b2>>8)
+		}
+	})
 }
 
 func generateTestIconPNG(t *testing.T, width, height int) []byte {
@@ -262,6 +404,41 @@ func generateTestIconPNG(t *testing.T, width, height int) []byte {
 		t.Fatalf("encode test icon: %v", err)
 	}
 	return out.Bytes()
+}
+
+func generatePartiallyTransparentTestIconPNG(t *testing.T, width, height int) []byte {
+	t.Helper()
+
+	img := image.NewNRGBA(image.Rect(0, 0, width, height))
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			if x < width/2 {
+				img.SetNRGBA(x, y, color.NRGBA{R: 200, G: 10, B: 10, A: 0})
+			} else {
+				img.SetNRGBA(x, y, color.NRGBA{R: 10, G: 180, B: 20, A: 255})
+			}
+		}
+	}
+
+	var out bytes.Buffer
+	encoder := png.Encoder{CompressionLevel: png.NoCompression}
+	if err := encoder.Encode(&out, img); err != nil {
+		t.Fatalf("encode test icon: %v", err)
+	}
+	return out.Bytes()
+}
+
+func assertImageFullyOpaque(t *testing.T, img image.Image) {
+	t.Helper()
+	b := img.Bounds()
+	for y := b.Min.Y; y < b.Max.Y; y++ {
+		for x := b.Min.X; x < b.Max.X; x++ {
+			_, _, _, a := img.At(x, y).RGBA()
+			if a != 0xffff {
+				t.Fatalf("pixel at (%d,%d) is not fully opaque (alpha %d)", x, y, a>>8)
+			}
+		}
+	}
 }
 
 func readArchiveEntryBytes(t *testing.T, archivePath, relPath string) []byte {

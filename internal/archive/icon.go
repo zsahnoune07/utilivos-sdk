@@ -5,17 +5,18 @@ import (
 	"fmt"
 	"image"
 	"image/color"
-	stddraw "image/draw"
 	"image/png"
 	"math"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/utilivo/utilivo-sdk/internal/manifest"
 )
 
-const optimizedIconSize = 512
+// optimizedIconMaxEdge is the maximum allowed width or height after scaling.
+const optimizedIconMaxEdge = 512
 
 func OptimizeManifestIcon(root string, m manifest.Manifest, entries []Entry) ([]Entry, error) {
 	rel := normalizeBuildIgnoreLine(m.Icon)
@@ -58,17 +59,55 @@ func optimizePNGIcon(path string) ([]byte, bool, error) {
 		return nil, false, nil
 	}
 
-	canvas, err := normalizeIconCanvas(sourceImage)
+	scaled, err := normalizeIconCanvas(sourceImage)
 	if err != nil {
 		return nil, false, err
 	}
+	opaque := flattenAlphaOnWhite(scaled)
 
 	var out bytes.Buffer
 	encoder := png.Encoder{CompressionLevel: png.BestCompression}
-	if err := encoder.Encode(&out, canvas); err != nil {
+	if err := encoder.Encode(&out, opaque); err != nil {
 		return nil, false, err
 	}
-	return out.Bytes(), true, nil
+	compressed, err := compressWithPNGQuant(out.Bytes())
+	if err != nil {
+		return nil, false, err
+	}
+	return compressed, true, nil
+}
+
+func compressWithPNGQuant(input []byte) ([]byte, error) {
+	if _, err := exec.LookPath("pngquant"); err != nil {
+		return nil, fmt.Errorf("pngquant not found in PATH; install pngquant to enable icon compression")
+	}
+
+	cmd := exec.Command(
+		"pngquant",
+		"--force",
+		"--output", "-",
+		"--strip",
+		"--speed", "1",
+		"--",
+		"-",
+	)
+	cmd.Stdin = bytes.NewReader(input)
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
+		msg := strings.TrimSpace(stderr.String())
+		if msg == "" {
+			msg = err.Error()
+		}
+		return nil, fmt.Errorf("pngquant compression failed: %s", msg)
+	}
+	if stdout.Len() == 0 {
+		return nil, fmt.Errorf("pngquant produced empty output")
+	}
+	return stdout.Bytes(), nil
 }
 
 func normalizeIconCanvas(src image.Image) (*image.NRGBA, error) {
@@ -79,29 +118,47 @@ func normalizeIconCanvas(src image.Image) (*image.NRGBA, error) {
 		return nil, fmt.Errorf("icon image must have positive dimensions")
 	}
 
-	scale := math.Min(
-		float64(optimizedIconSize)/float64(srcWidth),
-		float64(optimizedIconSize)/float64(srcHeight),
-	)
-	targetWidth := max(1, int(math.Round(float64(srcWidth)*scale)))
-	targetHeight := max(1, int(math.Round(float64(srcHeight)*scale)))
+	maxDim := max(srcWidth, srcHeight)
+	var targetWidth, targetHeight int
+	if maxDim <= optimizedIconMaxEdge {
+		targetWidth = srcWidth
+		targetHeight = srcHeight
+	} else {
+		scale := float64(optimizedIconMaxEdge) / float64(maxDim)
+		targetWidth = max(1, int(math.Round(float64(srcWidth)*scale)))
+		targetHeight = max(1, int(math.Round(float64(srcHeight)*scale)))
+	}
 
-	scaled := image.NewNRGBA(image.Rect(0, 0, targetWidth, targetHeight))
-	resizeBilinear(scaled, src)
+	out := image.NewNRGBA(image.Rect(0, 0, targetWidth, targetHeight))
+	resizeBilinear(out, src)
+	return out, nil
+}
 
-	canvas := image.NewNRGBA(image.Rect(0, 0, optimizedIconSize, optimizedIconSize))
-	offset := image.Pt(
-		(optimizedIconSize-targetWidth)/2,
-		(optimizedIconSize-targetHeight)/2,
-	)
-	stddraw.Draw(
-		canvas,
-		image.Rectangle{Min: offset, Max: offset.Add(scaled.Bounds().Size())},
-		scaled,
-		image.Point{},
-		stddraw.Src,
-	)
-	return canvas, nil
+// flattenAlphaOnWhite composites each pixel over opaque white, then sets alpha
+// to 255 so the PNG encoder emits truecolor RGB (no alpha channel).
+func flattenAlphaOnWhite(src *image.NRGBA) *image.NRGBA {
+	bounds := src.Bounds()
+	out := image.NewNRGBA(bounds)
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			c := src.NRGBAAt(x, y)
+			a := float64(c.A) / 255
+			if a == 0 {
+				out.SetNRGBA(x, y, color.NRGBA{R: 255, G: 255, B: 255, A: 255})
+				continue
+			}
+			r := float64(c.R)*a + 255*(1-a)
+			g := float64(c.G)*a + 255*(1-a)
+			b := float64(c.B)*a + 255*(1-a)
+			out.SetNRGBA(x, y, color.NRGBA{
+				R: uint8(math.Round(r)),
+				G: uint8(math.Round(g)),
+				B: uint8(math.Round(b)),
+				A: 255,
+			})
+		}
+	}
+	return out
 }
 
 func resizeBilinear(dst *image.NRGBA, src image.Image) {

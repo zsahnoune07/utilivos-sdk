@@ -3,7 +3,7 @@
 ## create
 
 ```bash
-utilivo create <plugin-dir> [--name "My Plugin"] [--slug my-plugin] [--category utilities] [--tier free] [--author "Name"] [--description "..."] [--tags a,b,c] [--template basic|widget]
+utilivo create <plugin-dir> [--name "My Plugin"] [--slug my-plugin] [--category utilities] [--tier free] [--author "Name"] [--description "..."] [--tags a,b,c] [--template basic|widget] [--runtime-mode bundled|host]
 ```
 
 Creates a strict plugin scaffold with the host-aligned web UI kit, `manifest.json`, `AGENTS.md`, `PLAN.md`, `.env.example`, `build.ignore`, and metadata assets.
@@ -23,6 +23,7 @@ Highlights:
 - injects a minimal host runtime object (`window.UtilivoHost`) for parity-focused local testing
 - includes live refresh on source changes via a lightweight `/__utilivo__/live` endpoint
 - overlays runtime JavaScript errors in-browser for faster debugging
+- for `runtime_mode=host`, if `tool/utilivo/base.css` exists, injects the UI kit into the served entry HTML (your on-disk `tool/index.html` must not link `./utilivo/*`; packaging omits `tool/utilivo/` from the `.ubb` so the real app supplies the runtime)
 
 ## verify
 
@@ -70,7 +71,7 @@ utilivo pack [--dir .] [--out dist] [--skip-verify] [--strict] [--json]
 Creates deterministic unsigned package artifacts.
 The archive artifact extension is `.ubb`.
 If `build.ignore` exists, each relative path listed there is excluded from the packaged payload.
-If the manifest icon is a PNG, packaging normalizes it to `512x512` and recompresses it inside the archive.
+If the manifest icon is a PNG, packaging scales it so the longest side is at most `512px` (aspect ratio preserved), then recompresses it inside the archive.
 
 ## sign
 
@@ -123,11 +124,17 @@ Removes generated build artifacts in `dist/`.
 
 ## manifest helpers
 
+Run these from the plugin root (the directory that contains `manifest.json`), or pass `--dir` to that folder.
+
 ```bash
-utilivo manifest lint
-utilivo manifest format
-utilivo manifest bump patch|minor|major
+utilivo manifest lint [--dir .]
+utilivo manifest format [--dir .]
+utilivo manifest bump patch|minor|major [--dir .]
+utilivo manifest update [--dir .] [--dry-run]
+utilivo manifest sync [--dir .] [--dry-run]
 ```
+
+`update` and `sync` are the same command: they merge in any keys required by the current SDK manifest contract when those fields are missing (for example `design_system_version`, `runtime_mode`, `locales`). Use `--dry-run` to list fields that would change without writing the file.
 
 ## version
 

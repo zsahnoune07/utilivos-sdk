@@ -172,7 +172,17 @@ PLAN.md
 `
 }
 
-func IndexHTML(pluginName string) string {
+func IndexHTML(pluginName, runtimeMode string) string {
+	headImports := `    <link rel="stylesheet" href="./utilivo/base.css" />
+    <link rel="stylesheet" href="./utilivo/layout.css" />
+    <link rel="stylesheet" href="./utilivo/components.css" />
+    <link rel="stylesheet" href="./style.css" />`
+	scripts := `    <script src="./utilivo/tool.js"></script>
+    <script src="./main.js"></script>`
+	if strings.EqualFold(strings.TrimSpace(runtimeMode), "host") {
+		headImports = `    <link rel="stylesheet" href="./style.css" />`
+		scripts = `    <script src="./main.js"></script>`
+	}
 	return `<!doctype html>
 <html lang="en" data-i18n-document-title="page.meta.title">
   <head>
@@ -180,10 +190,7 @@ func IndexHTML(pluginName string) string {
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
     <title></title>
-    <link rel="stylesheet" href="./utilivo/base.css" />
-    <link rel="stylesheet" href="./utilivo/layout.css" />
-    <link rel="stylesheet" href="./utilivo/components.css" />
-    <link rel="stylesheet" href="./style.css" />
+` + headImports + `
   </head>
   <body class="uv-tool-page">
     <main class="uv-tool-page__content">
@@ -274,8 +281,7 @@ func IndexHTML(pluginName string) string {
         </div>
       </section>
     </main>
-    <script src="./utilivo/tool.js"></script>
-    <script src="./main.js"></script>
+` + scripts + `
   </body>
 </html>
 `
@@ -593,7 +599,17 @@ func ManifestTestJSON() string {
 `
 }
 
-func StructureTestYAML() string {
+func StructureTestYAML(runtimeMode string) string {
+	requiredRuntimeFiles := `  - tool/utilivo/base.css
+  - tool/utilivo/components.css
+  - tool/utilivo/layout.css
+  - tool/utilivo/utilities.css
+  - tool/utilivo/patterns.css
+  - tool/utilivo/tool.js
+`
+	if strings.EqualFold(strings.TrimSpace(runtimeMode), "host") {
+		requiredRuntimeFiles = ""
+	}
 	return `required:
   - manifest.json
   - AGENTS.md
@@ -605,12 +621,7 @@ func StructureTestYAML() string {
   - tool/main.js
   - tool/style.css
   - tool/locales/en.json
-  - tool/utilivo/base.css
-  - tool/utilivo/components.css
-  - tool/utilivo/layout.css
-  - tool/utilivo/utilities.css
-  - tool/utilivo/patterns.css
-  - tool/utilivo/tool.js
+` + requiredRuntimeFiles + `
   - tool/assets/icon.png
   - tool/assets/thumb.png
   - tool/assets/screenshots/home.png

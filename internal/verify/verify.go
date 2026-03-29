@@ -58,10 +58,6 @@ func Run(root string) (Result, error) {
 		"tool/main.js",
 		"tool/style.css",
 		"tool/locales/en.json",
-		"tool/utilivo/base.css",
-		"tool/utilivo/components.css",
-		"tool/utilivo/layout.css",
-		"tool/utilivo/tool.js",
 		"tool/assets/icon.png",
 		"tool/assets/thumb.png",
 		"tool/assets/screenshots/home.png",
@@ -91,15 +87,25 @@ func Run(root string) (Result, error) {
 
 	manifestPath := filepath.Join(absRoot, "manifest.json")
 	var parsed manifest.Manifest
+	runtimeMode := "bundled"
 	if util.Exists(manifestPath) {
 		parsed, err = manifest.Load(manifestPath)
 		if err != nil {
 			r.Add(util.SeverityError, "manifest.parse", "manifest.json", err.Error())
 		} else {
+			runtimeMode = manifest.RuntimeModeOrDefault(parsed.RuntimeMode)
 			r.Merge(manifest.Validate(parsed))
 			r.Merge(validateManifestReferences(absRoot, parsed))
 			r.Merge(validateLocaleFiles(absRoot, parsed))
 		}
+	}
+	if runtimeMode == "bundled" {
+		requiredSource = append(requiredSource,
+			"tool/utilivo/base.css",
+			"tool/utilivo/components.css",
+			"tool/utilivo/layout.css",
+			"tool/utilivo/tool.js",
+		)
 	}
 
 	if util.IsDir(filepath.Join(absRoot, "tests")) {
@@ -120,7 +126,7 @@ func Run(root string) (Result, error) {
 			if remoteScriptPattern.Match(content) {
 				r.Add(util.SeverityError, "entry.remote_script", entryRelPath, "remote script tags are not allowed")
 			}
-			r.Merge(validateEntryDesignSystem(entryRelPath, content))
+			r.Merge(validateEntryDesignSystem(entryRelPath, content, runtimeMode))
 			r.Merge(validateEntryLocalization(entryRelPath, content))
 		}
 	} else {
@@ -139,7 +145,7 @@ func Run(root string) (Result, error) {
 		if total > 20*1024*1024 {
 			r.Add(util.SeverityWarning, "archive.size", "", "package payload exceeds 20MB")
 		}
-		for _, rel := range requiredPackagedFiles() {
+		for _, rel := range requiredPackagedFiles(runtimeMode) {
 			if _, ok := packaged[rel]; !ok {
 				r.Add(util.SeverityError, "archive.required_package", rel, "required file is excluded from the final package payload")
 			}
@@ -160,21 +166,26 @@ func Run(root string) (Result, error) {
 	return result, nil
 }
 
-func requiredPackagedFiles() []string {
-	return []string{
+func requiredPackagedFiles(runtimeMode string) []string {
+	required := []string{
 		"manifest.json",
 		"tool/index.html",
 		"tool/main.js",
 		"tool/style.css",
 		"tool/locales/en.json",
-		"tool/utilivo/base.css",
-		"tool/utilivo/components.css",
-		"tool/utilivo/layout.css",
-		"tool/utilivo/tool.js",
 		"tool/assets/icon.png",
 		"tool/assets/thumb.png",
 		"tool/assets/screenshots/home.png",
 	}
+	if runtimeMode == "bundled" {
+		required = append(required,
+			"tool/utilivo/base.css",
+			"tool/utilivo/components.css",
+			"tool/utilivo/layout.css",
+			"tool/utilivo/tool.js",
+		)
+	}
+	return required
 }
 
 func validateManifestReferences(root string, m manifest.Manifest) util.Report {
@@ -252,19 +263,25 @@ func scanProjectFiles(root string) util.Report {
 	return r
 }
 
-func validateEntryDesignSystem(entryPath string, content []byte) util.Report {
+func validateEntryDesignSystem(entryPath string, content []byte, runtimeMode string) util.Report {
 	r := util.NewReport()
-	if !baseCSSImportPattern.Match(content) {
-		r.Add(util.SeverityError, "design.import.base", entryPath, "entry html must import utilivo/base.css")
-	}
-	if !componentsImportPattern.Match(content) {
-		r.Add(util.SeverityError, "design.import.components", entryPath, "entry html must import utilivo/components.css")
-	}
-	if !layoutCSSImportPattern.Match(content) {
-		r.Add(util.SeverityError, "design.import.layout", entryPath, "entry html must import utilivo/layout.css")
-	}
-	if !toolJSImportPattern.Match(content) {
-		r.Add(util.SeverityError, "design.import.tool_js", entryPath, "entry html must import utilivo/tool.js")
+	if runtimeMode == "bundled" {
+		if !baseCSSImportPattern.Match(content) {
+			r.Add(util.SeverityError, "design.import.base", entryPath, "entry html must import utilivo/base.css")
+		}
+		if !componentsImportPattern.Match(content) {
+			r.Add(util.SeverityError, "design.import.components", entryPath, "entry html must import utilivo/components.css")
+		}
+		if !layoutCSSImportPattern.Match(content) {
+			r.Add(util.SeverityError, "design.import.layout", entryPath, "entry html must import utilivo/layout.css")
+		}
+		if !toolJSImportPattern.Match(content) {
+			r.Add(util.SeverityError, "design.import.tool_js", entryPath, "entry html must import utilivo/tool.js")
+		}
+	} else {
+		if baseCSSImportPattern.Match(content) || componentsImportPattern.Match(content) || layoutCSSImportPattern.Match(content) || toolJSImportPattern.Match(content) {
+			r.Add(util.SeverityError, "design.import.host_mode", entryPath, "runtime_mode=host must not import local utilivo runtime files")
+		}
 	}
 	if !toolPageContainerPattern.Match(content) {
 		r.Add(util.SeverityError, "design.tool_page", entryPath, "layout must use ToolPage container class uv-tool-page")

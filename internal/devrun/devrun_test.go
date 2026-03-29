@@ -13,6 +13,7 @@ import (
 
 	"github.com/utilivo/utilivo-sdk/internal/devrun"
 	"github.com/utilivo/utilivo-sdk/internal/scaffold"
+	"github.com/utilivo/utilivo-sdk/internal/templates"
 )
 
 func TestServerStartsAndServesDevRuntime(t *testing.T) {
@@ -119,6 +120,50 @@ func TestLiveEndpointDetectsRevisionChanges(t *testing.T) {
 		}
 	case <-time.After(12 * time.Second):
 		t.Fatal("timed out waiting for live endpoint to detect file change")
+	}
+}
+
+func TestHostModeRunInjectsUtilivoWhenKitOnDisk(t *testing.T) {
+	t.Parallel()
+	project := filepath.Join(t.TempDir(), "run-host")
+	if _, err := scaffold.Create(scaffold.Options{TargetPath: project}); err != nil {
+		t.Fatalf("scaffold: %v", err)
+	}
+	manPath := filepath.Join(project, "manifest.json")
+	var man map[string]any
+	manRaw, err := os.ReadFile(manPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(manRaw, &man); err != nil {
+		t.Fatal(err)
+	}
+	man["runtime_mode"] = "host"
+	man["runtime_contract_version"] = 1
+	out, err := json.MarshalIndent(man, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(manPath, append(out, '\n'), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(project, "tool/index.html"), []byte(templates.IndexHTML("Host Dev", "host")), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	server, err := devrun.Start(devrun.Options{Root: project, Host: "127.0.0.1", Port: 0, Theme: "light"})
+	if err != nil {
+		t.Fatalf("start: %v", err)
+	}
+	defer func() { _ = server.Close() }()
+
+	client := &http.Client{Timeout: 5 * time.Second}
+	entryBody := mustGET(t, client, server.URL()+"/"+server.EntryPath())
+	if !strings.Contains(entryBody, `utilivo/base.css`) {
+		t.Fatal("expected injected utilivo CSS in entry response")
+	}
+	if !strings.Contains(entryBody, `utilivo/tool.js`) {
+		t.Fatal("expected injected utilivo/tool.js")
 	}
 }
 

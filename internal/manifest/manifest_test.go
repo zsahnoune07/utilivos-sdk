@@ -16,6 +16,56 @@ func TestValidate_DefaultManifestIsValid(t *testing.T) {
 	}
 }
 
+func TestMergeLatestRequirements_NoOpOnDefault(t *testing.T) {
+	t.Parallel()
+	m := manifest.Default("Sample", "sample-plugin", "Tester")
+	_, added := manifest.MergeLatestRequirements(m)
+	if len(added) != 0 {
+		t.Fatalf("expected no fields added, got %v", added)
+	}
+}
+
+func TestMergeLatestRequirements_FillsDesignSystemAndDarkMode(t *testing.T) {
+	t.Parallel()
+	m := manifest.Default("Sample", "sample-plugin", "Tester")
+	m.DesignSystemVersion = 0
+	m.SupportsDarkMode = false
+	out, added := manifest.MergeLatestRequirements(m)
+	if out.DesignSystemVersion != 1 || !out.SupportsDarkMode {
+		t.Fatalf("unexpected out: %#v", out)
+	}
+	want := map[string]bool{"design_system_version": true, "supports_dark_mode": true}
+	for _, f := range added {
+		if want[f] {
+			delete(want, f)
+		}
+	}
+	if len(want) != 0 {
+		t.Fatalf("missing expected notes, added=%v", added)
+	}
+}
+
+func TestMergeLatestRequirements_HostFillsRuntimeContract(t *testing.T) {
+	t.Parallel()
+	m := manifest.Default("Sample", "sample-plugin", "Tester")
+	m.RuntimeMode = "host"
+	m.RuntimeContractVersion = 0
+	out, added := manifest.MergeLatestRequirements(m)
+	if out.RuntimeContractVersion != manifest.CurrentRuntimeContractVersion {
+		t.Fatalf("contract version: got %d", out.RuntimeContractVersion)
+	}
+	found := false
+	for _, f := range added {
+		if f == "runtime_contract_version" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatalf("expected runtime_contract_version in added, got %v", added)
+	}
+}
+
 func TestValidate_InvalidManifestFails(t *testing.T) {
 	t.Parallel()
 	m := manifest.Default("Sample", "sample-plugin", "Tester")
@@ -112,5 +162,43 @@ func TestParseJSON_OptionalFieldsAreAccepted(t *testing.T) {
 	}
 	if m.DefaultLocale != "en" || !strings.Contains(m.Repository, "example.com") {
 		t.Fatalf("unexpected parsed optional fields: %+v", m)
+	}
+}
+
+func TestParseJSON_IntegerManifestFieldsAllowNumericStrings(t *testing.T) {
+	t.Parallel()
+	raw := `{
+  "id": "com.utilivo.plugin.bmi-calculator",
+  "name": "BMI Calculator",
+  "slug": "bmi-calculator",
+  "version": "1.0.0",
+  "description": "Test",
+  "author": "Utilivo",
+  "entry": "tool/index.html",
+  "icon": "tool/assets/icon.png",
+  "thumb": "tool/assets/thumb.png",
+  "category": "health",
+  "tags": ["bmi", "wellness", "health"],
+  "tier": "free",
+  "permissions": ["storage"],
+  "ui_type": "page",
+  "api_version": "1",
+  "screenshots": ["tool/assets/screenshots/home.png"],
+  "min_app_version": "1.0.0",
+  "locales": ["en"],
+  "default_locale": "en",
+  "manifest_schema_version": "1",
+  "design_system_version": "1",
+  "supports_dark_mode": true,
+  "runtime_mode": "host",
+  "runtime_contract_version": "1"
+}`
+	m, err := manifest.ParseJSON([]byte(raw))
+	if err != nil {
+		t.Fatalf("parse: %v", err)
+	}
+	r := manifest.Validate(m)
+	if r.Errors != 0 {
+		t.Fatalf("expected valid manifest, got errors=%d: %+v", r.Errors, r.Issues)
 	}
 }

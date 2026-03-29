@@ -64,6 +64,7 @@ func Pack(root, outDir string) (Artifacts, error) {
 	if err != nil {
 		return Artifacts{}, err
 	}
+	entries = archive.DropToolUtilivoForHostMode(entries, manifest.RuntimeModeOrDefault(m.RuntimeMode) == "host")
 	entries, err = archive.OptimizeManifestIcon(absRoot, m, entries)
 	if err != nil {
 		return Artifacts{}, err

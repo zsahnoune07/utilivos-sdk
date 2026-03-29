@@ -14,6 +14,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -32,6 +33,8 @@ const (
 	watcherPollInterval    = 700 * time.Millisecond
 	defaultShutdownTimeout = 3 * time.Second
 )
+
+var headOpenTagPattern = regexp.MustCompile(`(?i)<head[^>]*>`) // nolint:gochecknoglobals
 
 type Options struct {
 	Root  string
@@ -364,7 +367,11 @@ func (s *Server) serveEntryWithPrelude(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	injected := injectPrelude(string(b), s.buildPreludeScript(r.Host))
+	htmlDoc := string(b)
+	if manifest.RuntimeModeOrDefault(s.manifest.RuntimeMode) == "host" && util.Exists(filepath.Join(s.root, "tool", "utilivo", "base.css")) {
+		htmlDoc = injectHostDevUtilivo(htmlDoc)
+	}
+	injected := injectPrelude(htmlDoc, s.buildPreludeScript(r.Host))
 	_, _ = w.Write([]byte(injected))
 }
 
@@ -635,6 +642,36 @@ func computeRevision(root string) (string, error) {
 
 func statRecord(rel string, stat fs.FileInfo) string {
 	return fmt.Sprintf("%s|%d|%d", rel, stat.Size(), stat.ModTime().UnixNano())
+}
+
+func injectHostDevUtilivo(htmlDoc string) string {
+	snippet := `    <!-- utilivo run: UI kit for host-mode dev only (omitted from .ubb) -->
+    <link rel="stylesheet" href="./utilivo/base.css" />
+    <link rel="stylesheet" href="./utilivo/layout.css" />
+    <link rel="stylesheet" href="./utilivo/components.css" />
+`
+	htmlDoc = injectAfterHeadOpen(htmlDoc, snippet)
+	htmlDoc = injectBeforeClosingBody(htmlDoc, `    <script src="./utilivo/tool.js"></script>`)
+	return htmlDoc
+}
+
+func injectAfterHeadOpen(htmlDoc, insert string) string {
+	loc := headOpenTagPattern.FindStringIndex(htmlDoc)
+	if loc == nil {
+		return insert + htmlDoc
+	}
+	pos := loc[1]
+	return htmlDoc[:pos] + "\n" + insert + htmlDoc[pos:]
+}
+
+func injectBeforeClosingBody(htmlDoc, insert string) string {
+	tag := "</body>"
+	lower := strings.ToLower(htmlDoc)
+	idx := strings.LastIndex(lower, tag)
+	if idx == -1 {
+		return htmlDoc + "\n" + insert + "\n"
+	}
+	return htmlDoc[:idx] + insert + "\n" + htmlDoc[idx:]
 }
 
 func injectPrelude(htmlDoc string, prelude string) string {

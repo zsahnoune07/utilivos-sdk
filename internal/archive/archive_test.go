@@ -12,6 +12,26 @@ import (
 	"github.com/utilivo/utilivo-sdk/internal/scaffold"
 )
 
+func TestDropToolUtilivoForHostMode(t *testing.T) {
+	t.Parallel()
+	entries := []archive.Entry{
+		{RelPath: "manifest.json"},
+		{RelPath: "tool/index.html"},
+		{RelPath: "tool/utilivo/base.css"},
+		{RelPath: "tool/utilivo/tool.js"},
+	}
+	filtered := archive.DropToolUtilivoForHostMode(entries, true)
+	if len(filtered) != 2 {
+		t.Fatalf("expected 2 entries, got %d: %#v", len(filtered), filtered)
+	}
+	if archive.DropToolUtilivoForHostMode(entries, false) == nil {
+		t.Fatal("expected non-nil")
+	}
+	if len(archive.DropToolUtilivoForHostMode(entries, false)) != len(entries) {
+		t.Fatal("bundled mode should keep all entries")
+	}
+}
+
 func TestDeterministicZipPackaging(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
