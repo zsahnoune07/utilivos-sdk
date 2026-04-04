@@ -1,8 +1,8 @@
 SHELL := /bin/bash
 
 BINARY := utilivo
-MODULE := github.com/utilivo/utilivo-sdk
-VERSION ?= 0.1.0
+MODULE := gitlab.com/utilivo/utilivo-sdk
+VERSION ?= 0.1.8
 PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
 

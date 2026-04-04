@@ -17,7 +17,8 @@
   const statSearch = document.getElementById("stat-search");
   const statLocale = document.getElementById("stat-locale");
   const statTheme = document.getElementById("stat-theme");
-  if (!ui || !button || !output || !clear || !name || !tone || !notes || !notify || !search || !status || !statusBody || !list || !empty || !summary || !statReady || !statSearch || !statLocale || !statTheme) return;
+  const runtime = window.UtilivoRuntime;
+  if (!ui || !runtime || !button || !output || !clear || !name || !tone || !notes || !notify || !search || !status || !statusBody || !list || !empty || !summary || !statReady || !statSearch || !statLocale || !statTheme) return;
 
   const listItems = [
     { id: "calculator", title: "list.items.calculator.title", subtitle: "list.items.calculator.subtitle" },
@@ -39,6 +40,17 @@
 
     let readyCount = 0;
     let searchCount = 0;
+
+    function getSerializableState() {
+      return {
+        v: 1,
+        name: name.value,
+        tone: tone.value,
+        notes: notes.value,
+        notify: notify.checked,
+        search: search.value,
+      };
+    }
 
     function setSummary(count) {
       summary.textContent = ui.t("list.summary", { count: String(count) });
@@ -97,6 +109,42 @@
       setSummary(filtered.length);
     }
 
+    function applySerializableState(data) {
+      if (!data || typeof data !== "object") {
+        return;
+      }
+      if (data.v !== 1) {
+        return;
+      }
+      if (typeof data.name === "string") {
+        name.value = data.name;
+      }
+      if (data.tone === "short" || data.tone === "detailed") {
+        tone.value = data.tone;
+      }
+      if (typeof data.notes === "string") {
+        notes.value = data.notes;
+      }
+      if (typeof data.notify === "boolean") {
+        notify.checked = data.notify;
+      }
+      if (typeof data.search === "string") {
+        search.value = data.search;
+      }
+      renderList(search.value);
+    }
+
+    const session = window.UtilivoRuntime.syncState({
+      read: getSerializableState,
+      write: applySerializableState,
+      debounceMs: 400,
+    });
+    window.UtilivoRuntime.registerSessionRestore((snapshot) => {
+      applySerializableState(snapshot);
+      session.persistNow();
+    });
+    await session.hydrateFromHost();
+
     const renderReady = () => {
       output.textContent = ui.t("result.ready");
       status.hidden = true;
@@ -104,8 +152,27 @@
       setSummary(listItems.length);
     };
 
-    renderList("");
+    renderList(search.value);
     renderReady();
+
+    function wireSessionPersist() {
+      session.schedulePersist();
+    }
+
+    [name, notes].forEach((el) => {
+      el.addEventListener("blur", () => {
+        session.persistNow();
+      });
+    });
+    tone.addEventListener("change", wireSessionPersist);
+    notify.addEventListener("change", wireSessionPersist);
+    name.addEventListener("input", wireSessionPersist);
+    notes.addEventListener("input", wireSessionPersist);
+    search.addEventListener("input", () => {
+      searchCount += 1;
+      renderList(search.value);
+      wireSessionPersist();
+    });
 
     button.addEventListener("click", () => {
       const displayName = name.value.trim() || ui.t("result.fallback_name");
@@ -133,11 +200,7 @@
       search.value = "";
       renderList("");
       renderReady();
-    });
-
-    search.addEventListener("input", () => {
-      searchCount += 1;
-      renderList(search.value);
+      session.persistNow();
     });
   }
 

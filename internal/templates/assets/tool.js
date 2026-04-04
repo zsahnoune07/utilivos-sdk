@@ -478,6 +478,334 @@
     });
   }
 
+  /**
+   * Host session bridge helpers. See Utilivo docs: persistState / loadState and
+   * UtilivoHost.capabilities.restoreRequested (hydrate only after user-driven restore).
+   */
+  function getCapabilities() {
+    const cap = global.UtilivoHost?.capabilities;
+    const out = {
+      restoreRequested: false,
+      hasPro: false,
+      persistAllowed: false,
+      launchMode: '',
+      launchToken: '',
+      slug: '',
+    };
+    if (!cap || typeof cap !== 'object') {
+      return out;
+    }
+    if (cap.restoreRequested === true) {
+      out.restoreRequested = true;
+    }
+    if (cap.hasPro === true) {
+      out.hasPro = true;
+    }
+    if (cap.persistAllowed === true) {
+      out.persistAllowed = true;
+    }
+    if (typeof cap.launchMode === 'string') {
+      out.launchMode = cap.launchMode;
+    }
+    if (typeof cap.launchToken === 'string') {
+      out.launchToken = cap.launchToken;
+    }
+    if (typeof cap.slug === 'string') {
+      out.slug = cap.slug;
+    }
+    return out;
+  }
+
+  function shouldHydrateFromHost() {
+    return getCapabilities().restoreRequested === true;
+  }
+
+  function syncState(options) {
+    const opts = options || {};
+    const read = typeof opts.read === 'function' ? opts.read : () => ({});
+    const write = typeof opts.write === 'function' ? opts.write : () => {};
+    const debounceMs =
+      typeof opts.debounceMs === 'number' && opts.debounceMs >= 0 ? opts.debounceMs : 400;
+    let timer = null;
+
+    function runPersist() {
+      const u = global.utilivo;
+      if (!u || typeof u.persistState !== 'function') {
+        return;
+      }
+      let payload;
+      try {
+        payload = read();
+      } catch (_) {
+        return;
+      }
+      const str = typeof payload === 'string' ? payload : JSON.stringify(payload);
+      Promise.resolve(u.persistState(str)).catch(() => {});
+    }
+
+    function schedulePersist() {
+      if (timer != null) {
+        global.clearTimeout(timer);
+      }
+      timer = global.setTimeout(() => {
+        timer = null;
+        runPersist();
+      }, debounceMs);
+    }
+
+    function persistNow() {
+      if (timer != null) {
+        global.clearTimeout(timer);
+        timer = null;
+      }
+      runPersist();
+    }
+
+    function utilivoLoadStateReady() {
+      const u = global.utilivo;
+      return !!(u && typeof u.loadState === 'function');
+    }
+
+    function waitForHostReady(timeoutMs) {
+      const cap = typeof timeoutMs === 'number' && timeoutMs > 0 ? timeoutMs : 4000;
+      if (utilivoLoadStateReady()) {
+        return Promise.resolve();
+      }
+      return new Promise((resolve) => {
+        let settled = false;
+        const finish = () => {
+          if (settled) {
+            return;
+          }
+          settled = true;
+          document.removeEventListener('utilivo-host-ready', onReady);
+          resolve();
+        };
+        const onReady = () => finish();
+        document.addEventListener('utilivo-host-ready', onReady, { once: true });
+        global.setTimeout(finish, cap);
+      });
+    }
+
+    async function hydrateFromHost() {
+      // Host sets UtilivoHost.capabilities.restoreRequested in bootstrap. If we check
+      // before the bridge exists, we return early and never hydrate. Wait for utilivo
+      // first, then evaluate restoreRequested (named session / legacy restore).
+      if (!utilivoLoadStateReady()) {
+        await waitForHostReady(4000);
+      }
+      if (!shouldHydrateFromHost()) {
+        return;
+      }
+      const u = global.utilivo;
+      if (!u || typeof u.loadState !== 'function') {
+        return;
+      }
+      let raw;
+      try {
+        raw = await u.loadState();
+      } catch (_) {
+        return;
+      }
+      if (raw == null || typeof raw !== 'string' || raw.trim() === '') {
+        return;
+      }
+      try {
+        const data = JSON.parse(raw);
+        if (data != null && typeof data === 'object') {
+          write(data);
+        }
+      } catch (_) {}
+    }
+
+    return {
+      schedulePersist,
+      persistNow,
+      hydrateFromHost,
+    };
+  }
+
+  const RESERVED_SNAPSHOT_KEYS = new Set([
+    'schemaVersion',
+    'toolSlug',
+    'toolVersion',
+    'savedAt',
+    'payload',
+  ]);
+
+  /**
+   * Normalizes host/session JSON into stable metadata + a flat fields map for tools.
+   */
+  function normalizeHostSnapshot(raw) {
+    const out = {
+      schemaVersion: 0,
+      toolSlug: '',
+      toolVersion: null,
+      fields: {},
+    };
+    if (raw == null) {
+      return out;
+    }
+    let obj = raw;
+    if (typeof raw === 'string') {
+      try {
+        obj = JSON.parse(raw);
+      } catch (_) {
+        return out;
+      }
+    }
+    if (!obj || typeof obj !== 'object') {
+      return out;
+    }
+    const sv = obj.schemaVersion;
+    if (typeof sv === 'number' && Number.isFinite(sv)) {
+      out.schemaVersion = sv;
+    } else if (typeof sv === 'string' && sv.trim() !== '') {
+      const n = parseInt(sv, 10);
+      if (Number.isFinite(n)) {
+        out.schemaVersion = n;
+      }
+    }
+    if (typeof obj.toolSlug === 'string') {
+      out.toolSlug = obj.toolSlug;
+    }
+    if (obj.toolVersion != null) {
+      out.toolVersion = String(obj.toolVersion);
+    }
+    if (obj.payload != null && typeof obj.payload === 'object') {
+      out.fields = Object.assign({}, obj.payload);
+      return out;
+    }
+    Object.keys(obj).forEach((k) => {
+      if (!RESERVED_SNAPSHOT_KEYS.has(k)) {
+        out.fields[k] = obj[k];
+      }
+    });
+    return out;
+  }
+
+  let sessionRestoreHandler = null;
+
+  function registerSessionRestore(handler) {
+    sessionRestoreHandler = typeof handler === 'function' ? handler : null;
+  }
+
+  let sessionRestoreListenerInstalled = false;
+
+  function ensureSessionRestoreListener() {
+    if (sessionRestoreListenerInstalled || !global.document) {
+      return;
+    }
+    sessionRestoreListenerInstalled = true;
+    global.document.addEventListener('utilivo-restore-request', (e) => {
+      const detail = e && e.detail;
+      if (!detail || typeof detail !== 'object') {
+        return;
+      }
+      const id = detail.id != null ? String(detail.id) : '';
+      const stateJson =
+        detail.stateJson != null ? String(detail.stateJson) : '';
+      const report =
+        global.utilivo && typeof global.utilivo.reportRestoreAck === 'function'
+          ? global.utilivo.reportRestoreAck
+          : null;
+      if (!report) {
+        return;
+      }
+      const run = async () => {
+        if (!stateJson || stateJson.trim() === '') {
+          report(id, false, 'empty_snapshot');
+          return;
+        }
+        let parsed;
+        try {
+          parsed = JSON.parse(stateJson);
+        } catch (_) {
+          report(id, false, 'invalid_json');
+          return;
+        }
+        if (!sessionRestoreHandler) {
+          report(id, false, 'no_handler');
+          return;
+        }
+        try {
+          await Promise.resolve(
+            sessionRestoreHandler(
+              parsed,
+              normalizeHostSnapshot(parsed),
+            ),
+          );
+          report(id, true, '');
+        } catch (err) {
+          report(
+            id,
+            false,
+            err && err.message ? String(err.message) : 'restore_failed',
+          );
+        }
+      };
+      void run();
+    });
+  }
+
+  ensureSessionRestoreListener();
+
+  /**
+   * Opinionated helper: stable field ids, syncState + in-place session restore.
+   */
+  function createRestorableFormState(options) {
+    const opts = options || {};
+    const fieldIds = Array.isArray(opts.fieldIds) ? opts.fieldIds : [];
+    const read = typeof opts.read === 'function' ? opts.read : () => ({});
+    const write = typeof opts.write === 'function' ? opts.write : () => {};
+    const recompute =
+      typeof opts.recompute === 'function' ? opts.recompute : null;
+
+    const session = syncState({
+      read: () => {
+        const full = read();
+        const out = {};
+        fieldIds.forEach((fid) => {
+          if (Object.prototype.hasOwnProperty.call(full, fid)) {
+            out[fid] = full[fid];
+          }
+        });
+        return out;
+      },
+      write: (data) => {
+        write(data);
+      },
+      debounceMs: opts.debounceMs,
+    });
+
+    function restoreState(snapshot) {
+      const norm = normalizeHostSnapshot(snapshot);
+      const patch = {};
+      fieldIds.forEach((fid) => {
+        if (Object.prototype.hasOwnProperty.call(norm.fields, fid)) {
+          patch[fid] = norm.fields[fid];
+        }
+      });
+      write(patch);
+      if (recompute) {
+        recompute();
+      }
+      session.persistNow();
+    }
+
+    registerSessionRestore((snap) => {
+      restoreState(snap);
+    });
+
+    return {
+      schedulePersist: session.schedulePersist,
+      persistNow: session.persistNow,
+      hydrateFromHost: session.hydrateFromHost,
+      serializeState: () => read(),
+      restoreState,
+    };
+  }
+
   global.UtilivoUI = {
     applyThemePayload,
     ensureToolPage,
@@ -499,5 +827,14 @@
     createSpinner,
     createEmptyState,
     createErrorState,
+  };
+
+  global.UtilivoRuntime = {
+    getCapabilities,
+    shouldHydrateFromHost,
+    syncState,
+    normalizeHostSnapshot,
+    registerSessionRestore,
+    createRestorableFormState,
   };
 })(window);

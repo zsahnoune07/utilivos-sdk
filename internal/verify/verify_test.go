@@ -183,6 +183,49 @@ func TestVerifyRejectsMissingRequiredSourceFile(t *testing.T) {
 	}
 }
 
+func TestVerifyScaffoldIncludesSessionBridge(t *testing.T) {
+	t.Parallel()
+	root := createScaffoldFixture(t)
+	result, err := verify.Run(root)
+	if err != nil {
+		t.Fatalf("verify run: %v", err)
+	}
+	for _, issue := range result.Report.Issues {
+		if issue.Code == "session.persist_bridge" {
+			t.Fatalf("unexpected session warning on default scaffold: %+v", issue)
+		}
+	}
+}
+
+func TestVerifyWarnsWhenSessionBridgeMissing(t *testing.T) {
+	t.Parallel()
+	root := createScaffoldFixture(t)
+	mainPath := filepath.Join(root, "tool", "main.js")
+	b, err := os.ReadFile(mainPath)
+	if err != nil {
+		t.Fatalf("read main.js: %v", err)
+	}
+	updated := strings.ReplaceAll(string(b), "window.UtilivoRuntime.syncState", "window.UtilivoIgnored.syncState")
+	if err := os.WriteFile(mainPath, []byte(updated), 0o644); err != nil {
+		t.Fatalf("write main.js: %v", err)
+	}
+
+	result, err := verify.Run(root)
+	if err != nil {
+		t.Fatalf("verify run: %v", err)
+	}
+	found := false
+	for _, issue := range result.Report.Issues {
+		if issue.Code == "session.persist_bridge" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatalf("expected session.persist_bridge warning, issues=%+v", result.Report.Issues)
+	}
+}
+
 func TestVerifyRejectsExcludingRequiredPackagedFile(t *testing.T) {
 	t.Parallel()
 	root := createScaffoldFixture(t)

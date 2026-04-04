@@ -376,6 +376,21 @@ func (s *Server) serveEntryWithPrelude(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) buildPreludeScript(requestHost string) string {
+	slug := strings.TrimSpace(s.manifest.Slug)
+	if slug == "" {
+		slug = "plugin"
+	}
+	rtMode := manifest.RuntimeModeOrDefault(s.manifest.RuntimeMode)
+	dsVer := int(s.manifest.DesignSystemVersion)
+	if dsVer == 0 {
+		dsVer = 1
+	}
+	rcVer := int(s.manifest.RuntimeContractVersion)
+	if rcVer == 0 && rtMode == "host" {
+		rcVer = manifest.CurrentRuntimeContractVersion
+	}
+	launchToken := fmt.Sprintf("dev-%s-%d", slug, s.startedAt.UnixNano())
+
 	hostPayload := map[string]any{
 		"mode": "dev",
 		"manifest": map[string]any{
@@ -401,6 +416,21 @@ func (s *Server) buildPreludeScript(requestHost string) string {
 		},
 		"theme": map[string]any{
 			"requested": s.theme,
+		},
+		"capabilities": map[string]any{
+			"previewMode":            false,
+			"hasPro":                 true,
+			"persistAllowed":         true,
+			"restoreRequested":       false,
+			"launchMode":             "ephemeral",
+			"launchToken":            launchToken,
+			"storageRemaining":       999,
+			"slug":                   slug,
+			"canPinShortcut":         true,
+			"runtimeMode":            rtMode,
+			"runtimeContractVersion": rcVer,
+			"designSystemVersion":    dsVer,
+			"sdkVersion":             "dev",
 		},
 	}
 	payloadJSON, _ := json.Marshal(hostPayload)
@@ -435,6 +465,7 @@ func (s *Server) buildPreludeScript(requestHost string) string {
       requested: requestedTheme,
       resolved: resolvedTheme,
     },
+    capabilities: hostPayload.capabilities,
   });
 
   if (!Object.prototype.hasOwnProperty.call(window, "UtilivoHost")) {
@@ -444,6 +475,30 @@ func (s *Server) buildPreludeScript(requestHost string) string {
       configurable: false,
       enumerable: true,
     });
+  }
+
+  if (!window.utilivo) {
+    let devEphemeralState = null;
+    window.utilivo = {
+      persistState(payload) {
+        return new Promise((resolve) => {
+          try {
+            devEphemeralState = typeof payload === "string" ? payload : JSON.stringify(payload);
+            resolve(true);
+          } catch (_) {
+            resolve(false);
+          }
+        });
+      },
+      loadState() {
+        return new Promise((resolve) => {
+          resolve(devEphemeralState);
+        });
+      },
+      requestGate() {
+        return Promise.resolve(true);
+      },
+    };
   }
 
   const applyThemePayload = () => {

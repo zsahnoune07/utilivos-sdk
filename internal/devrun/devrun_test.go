@@ -39,7 +39,13 @@ func TestServerStartsAndServesDevRuntime(t *testing.T) {
 	}
 
 	entryBody := mustGET(t, client, server.URL()+"/"+server.EntryPath())
-	for _, expected := range []string{"UtilivoHost", "__uv-dev-error-overlay", "/__utilivo__/live"} {
+	for _, expected := range []string{
+		"UtilivoHost",
+		"capabilities",
+		"persistState",
+		"__uv-dev-error-overlay",
+		"/__utilivo__/live",
+	} {
 		if !strings.Contains(entryBody, expected) {
 			t.Fatalf("entry response missing %q", expected)
 		}
@@ -186,6 +192,8 @@ func TestPreludeInjectsHostMetadataAndOverlayBootstrap(t *testing.T) {
 		`Object.defineProperty(window, "UtilivoHost"`,
 		"deepFreeze",
 		`mode: "dev"`,
+		"capabilities: hostPayload.capabilities",
+		"devEphemeralState",
 		"__uv-dev-error-overlay",
 		"Fix the error and save. utilivo run reloads the tool automatically.",
 		"/__utilivo__/live",

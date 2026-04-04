@@ -182,6 +182,10 @@ func ResolvePrivateKey(path string) (string, error) {
 	if env != "" {
 		return util.ExpandHome(env)
 	}
+	keyFile := strings.TrimSpace(os.Getenv("UTILIVO_PRIVATE_KEY_FILE"))
+	if keyFile != "" {
+		return util.ExpandHome(keyFile)
+	}
 	priv, _, err := DefaultKeyPaths()
 	if err != nil {
 		return "", err

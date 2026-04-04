@@ -384,6 +384,18 @@
     return select;
   }
 
+  function createToolTextarea(config) {
+    const options = config || {};
+    return createElement('textarea', {
+      className: 'uv-textarea',
+      text: options.value || '',
+      attrs: {
+        placeholder: options.placeholder || '',
+        rows: options.rows || 4,
+      },
+    });
+  }
+
   function createToolResult(text) {
     return createElement('pre', {
       className: 'uv-result uv-tool-result',
@@ -408,6 +420,47 @@
     });
   }
 
+  function createBadge(config) {
+    const options = config || {};
+    return createElement('span', {
+      className: ['uv-badge', options.variant && `uv-badge--${options.variant}`]
+        .filter(Boolean)
+        .join(' '),
+      text: options.label || 'Badge',
+    });
+  }
+
+  function createAlert(config) {
+    const options = config || {};
+    return createElement('section', {
+      className: ['uv-alert', options.variant && `uv-alert--${options.variant}`]
+        .filter(Boolean)
+        .join(' '),
+      children: [
+        createElement('strong', { text: options.title || '' }),
+        createElement('p', { text: options.message || '' }),
+      ].filter((node) => node && node.textContent),
+    });
+  }
+
+  function createToolbar(config) {
+    const options = config || {};
+    return createElement('header', {
+      className: ['uv-toolbar', options.className].filter(Boolean).join(' '),
+      children: options.children || [],
+    });
+  }
+
+  function createSpinner(label) {
+    return createElement('span', {
+      className: 'uv-loading',
+      children: [
+        createElement('span', { className: 'uv-spinner', attrs: { 'aria-hidden': 'true' } }),
+        createElement('span', { text: label || 'Loading...' }),
+      ],
+    });
+  }
+
   function createErrorState(config) {
     const options = config || {};
     return createElement('section', {
@@ -425,6 +478,153 @@
     });
   }
 
+  /**
+   * Host session bridge helpers. See Utilivo docs: persistState / loadState and
+   * UtilivoHost.capabilities.restoreRequested (hydrate only after user-driven restore).
+   */
+  function getCapabilities() {
+    const cap = global.UtilivoHost?.capabilities;
+    const out = {
+      restoreRequested: false,
+      hasPro: false,
+      persistAllowed: false,
+      launchMode: '',
+      launchToken: '',
+      slug: '',
+    };
+    if (!cap || typeof cap !== 'object') {
+      return out;
+    }
+    if (cap.restoreRequested === true) {
+      out.restoreRequested = true;
+    }
+    if (cap.hasPro === true) {
+      out.hasPro = true;
+    }
+    if (cap.persistAllowed === true) {
+      out.persistAllowed = true;
+    }
+    if (typeof cap.launchMode === 'string') {
+      out.launchMode = cap.launchMode;
+    }
+    if (typeof cap.launchToken === 'string') {
+      out.launchToken = cap.launchToken;
+    }
+    if (typeof cap.slug === 'string') {
+      out.slug = cap.slug;
+    }
+    return out;
+  }
+
+  function shouldHydrateFromHost() {
+    return getCapabilities().restoreRequested === true;
+  }
+
+  function syncState(options) {
+    const opts = options || {};
+    const read = typeof opts.read === 'function' ? opts.read : () => ({});
+    const write = typeof opts.write === 'function' ? opts.write : () => {};
+    const debounceMs =
+      typeof opts.debounceMs === 'number' && opts.debounceMs >= 0 ? opts.debounceMs : 400;
+    let timer = null;
+
+    function runPersist() {
+      const u = global.utilivo;
+      if (!u || typeof u.persistState !== 'function') {
+        return;
+      }
+      let payload;
+      try {
+        payload = read();
+      } catch (_) {
+        return;
+      }
+      const str = typeof payload === 'string' ? payload : JSON.stringify(payload);
+      Promise.resolve(u.persistState(str)).catch(() => {});
+    }
+
+    function schedulePersist() {
+      if (timer != null) {
+        global.clearTimeout(timer);
+      }
+      timer = global.setTimeout(() => {
+        timer = null;
+        runPersist();
+      }, debounceMs);
+    }
+
+    function persistNow() {
+      if (timer != null) {
+        global.clearTimeout(timer);
+        timer = null;
+      }
+      runPersist();
+    }
+
+    function utilivoLoadStateReady() {
+      const u = global.utilivo;
+      return !!(u && typeof u.loadState === 'function');
+    }
+
+    function waitForHostReady(timeoutMs) {
+      const cap = typeof timeoutMs === 'number' && timeoutMs > 0 ? timeoutMs : 4000;
+      if (utilivoLoadStateReady()) {
+        return Promise.resolve();
+      }
+      return new Promise((resolve) => {
+        let settled = false;
+        const finish = () => {
+          if (settled) {
+            return;
+          }
+          settled = true;
+          document.removeEventListener('utilivo-host-ready', onReady);
+          resolve();
+        };
+        const onReady = () => finish();
+        document.addEventListener('utilivo-host-ready', onReady, { once: true });
+        global.setTimeout(finish, cap);
+      });
+    }
+
+    async function hydrateFromHost() {
+      // Host sets UtilivoHost.capabilities.restoreRequested in bootstrap. If we check
+      // before the bridge exists, we return early and never hydrate. Wait for utilivo
+      // first, then evaluate restoreRequested (named session / legacy restore).
+      if (!utilivoLoadStateReady()) {
+        await waitForHostReady(4000);
+      }
+      if (!shouldHydrateFromHost()) {
+        return;
+      }
+      const u = global.utilivo;
+      if (!u || typeof u.loadState !== 'function') {
+        return;
+      }
+      let raw;
+      try {
+        raw = await u.loadState();
+      } catch (_) {
+        return;
+      }
+      if (raw == null || typeof raw !== 'string' || raw.trim() === '') {
+        return;
+      }
+      try {
+        const data = JSON.parse(raw);
+        if (data != null && typeof data === 'object') {
+          write(data);
+        }
+      } catch (_) {}
+    }
+
+    return {
+      schedulePersist,
+      persistNow,
+      hydrateFromHost,
+    };
+  }
+
   global.UtilivoUI = {
     applyThemePayload,
     ensureToolPage,
@@ -439,7 +639,18 @@
     createToolResult,
     createToolSection,
     createToolSelect,
+    createToolTextarea,
+    createBadge,
+    createAlert,
+    createToolbar,
+    createSpinner,
     createEmptyState,
     createErrorState,
+  };
+
+  global.UtilivoRuntime = {
+    getCapabilities,
+    shouldHydrateFromHost,
+    syncState,
   };
 })(window);

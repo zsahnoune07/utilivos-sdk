@@ -28,6 +28,7 @@ var (
 	htmlCommentPattern        = regexp.MustCompile(`(?s)<!--.*?-->`)
 	localizationInitPattern   = regexp.MustCompile(`\binitLocalization\s*\(`)
 	tokenOverridePattern      = regexp.MustCompile(`--uv-[a-z0-9-]+\s*:`) // nolint:gochecknoglobals
+	sessionBridgePattern      = regexp.MustCompile(`UtilivoRuntime\.syncState\s*\(|utilivo\.persistState\s*\(|\.persistState\s*\(`) // nolint:gochecknoglobals
 )
 
 var localizationStringPatterns = []*regexp.Regexp{
@@ -155,6 +156,7 @@ func Run(root string) (Result, error) {
 	r.Merge(scanProjectFiles(absRoot))
 	r.Merge(scanTokenOverrides(absRoot))
 	r.Merge(scanLocalizationUsage(absRoot))
+	r.Merge(scanSessionPersistence(absRoot))
 
 	result := Result{
 		Root:   absRoot,
@@ -374,6 +376,51 @@ func scanTokenOverrides(root string) util.Report {
 	})
 	if walkErr != nil {
 		r.Add(util.SeverityError, "design.scan", "tool", walkErr.Error())
+	}
+	return r
+}
+
+func scanSessionPersistence(root string) util.Report {
+	r := util.NewReport()
+	toolRoot := filepath.Join(root, "tool")
+	if !util.IsDir(toolRoot) {
+		return r
+	}
+
+	found := false
+	walkErr := filepath.WalkDir(toolRoot, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			return nil
+		}
+
+		rel, err := filepath.Rel(root, path)
+		if err != nil {
+			return err
+		}
+		rel = filepath.ToSlash(rel)
+		if strings.HasPrefix(rel, "tool/utilivo/") || !strings.HasSuffix(strings.ToLower(rel), ".js") {
+			return nil
+		}
+
+		content, err := os.ReadFile(path)
+		if err != nil {
+			return nil
+		}
+		if sessionBridgePattern.Match(content) {
+			found = true
+		}
+		return nil
+	})
+	if walkErr != nil {
+		r.Add(util.SeverityError, "session.scan", "tool", walkErr.Error())
+		return r
+	}
+	if !found {
+		r.Add(util.SeverityWarning, "session.persist_bridge", "tool",
+			"no UtilivoRuntime.syncState or utilivo.persistState in plugin JavaScript under tool/ (excluding tool/utilivo); call UtilivoRuntime.syncState from tool/main.js so host Save session can read ephemeral state")
 	}
 	return r
 }

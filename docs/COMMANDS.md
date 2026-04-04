@@ -20,7 +20,8 @@ Highlights:
 
 - opens a desktop browser by default (disable with `--no-open`)
 - serves a dev shell at `/` with the manifest entry page loaded inside it
-- injects a minimal host runtime object (`window.UtilivoHost`) for parity-focused local testing
+- injects a minimal host runtime object (`window.UtilivoHost`) including `capabilities` (aligned with the mobile host: `restoreRequested`, `launchToken`, `slug`, etc.) for parity-focused local testing
+- defines an in-memory `window.utilivo` stub (`persistState` / `loadState`) when the real bridge is absent so session sync can be exercised in the browser
 - includes live refresh on source changes via a lightweight `/__utilivo__/live` endpoint
 - overlays runtime JavaScript errors in-browser for faster debugging
 - for `runtime_mode=host`, if `tool/utilivo/base.css` exists, injects the UI kit into the served entry HTML (your on-disk `tool/index.html` must not link `./utilivo/*`; packaging omits `tool/utilivo/` from the `.ubb` so the real app supplies the runtime)
@@ -51,8 +52,17 @@ Checks include:
 - rejection of hardcoded user-facing strings outside `tool/locales/*.json`
 - rejection of plugin-authored `--uv-*` token overrides
 - package-file safety checks
+- **warning** `session.persist_bridge` when no `UtilivoRuntime.syncState` or `utilivo.persistState` usage is found under `tool/*.js` (excluding `tool/utilivo/`)
 
 `--strict` fails on warnings (CI mode).
+
+### Session save/load (host)
+
+Bundled plugins ship `UtilivoRuntime` in `tool/utilivo/tool.js`. Use `UtilivoRuntime.syncState({ read, write, debounceMs })` and hydrate only when `UtilivoHost.capabilities.restoreRequested` is true (the helper enforces this). The app’s **Save session** action reads ephemeral JSON written via `utilivo.persistState`.
+
+For the full contract (Pro gating, no auto-restore on open, payload shape), see the Utilivo repository’s [`tool_lib_updates.md`](../../tool_lib_updates.md) at the monorepo root (path is valid when this SDK lives inside the Utilivo tree).
+
+Plugins with `runtime_mode=host` do not package `tool/utilivo/`; the Flutter host must inject a compatible UI/runtime bundle that includes the same `UtilivoRuntime` API as this SDK’s `tool.js`.
 
 ## test
 
