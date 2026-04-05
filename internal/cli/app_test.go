@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/utilivo/utilivo-sdk/internal/cli"
-	"github.com/utilivo/utilivo-sdk/internal/util"
+	"utilivo/sdk/internal/cli"
+	"utilivo/sdk/internal/util"
 )
 
 func TestVersionCommand(t *testing.T) {

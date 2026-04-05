@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/utilivo/utilivo-sdk/internal/util"
-	"github.com/utilivo/utilivo-sdk/internal/verify"
+	"utilivo/sdk/internal/util"
+	"utilivo/sdk/internal/verify"
 )
 
 type Result struct {

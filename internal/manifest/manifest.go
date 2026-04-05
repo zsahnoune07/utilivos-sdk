@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/utilivo/utilivo-sdk/internal/util"
+	"utilivo/sdk/internal/util"
 )
 
 var (

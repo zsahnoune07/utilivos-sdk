@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/utilivo/utilivo-sdk/internal/devrun"
-	"github.com/utilivo/utilivo-sdk/internal/scaffold"
-	"github.com/utilivo/utilivo-sdk/internal/templates"
+	"utilivo/sdk/internal/devrun"
+	"utilivo/sdk/internal/scaffold"
+	"utilivo/sdk/internal/templates"
 )
 
 func TestServerStartsAndServesDevRuntime(t *testing.T) {

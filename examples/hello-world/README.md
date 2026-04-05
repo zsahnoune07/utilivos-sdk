@@ -19,6 +19,10 @@ utilivo test
 utilivo build
 ```
 
+## For AI and automated agents
+- Run utilivo verify and utilivo test when useful to validate changes.
+- Do not run utilivo build after implementing unless the user explicitly asks; the maintainer builds and reviews release artifacts.
+
 ## Plugin details
 - Slug: hello-world
 - Entry: tool/index.html

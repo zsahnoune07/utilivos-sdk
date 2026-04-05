@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/utilivo/utilivo-sdk/internal/signing"
+	"utilivo/sdk/internal/signing"
 )
 
 func TestSignAndVerify(t *testing.T) {

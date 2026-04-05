@@ -14,13 +14,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/utilivo/utilivo-sdk/internal/archive"
-	"github.com/utilivo/utilivo-sdk/internal/build"
-	"github.com/utilivo/utilivo-sdk/internal/scaffold"
-	"github.com/utilivo/utilivo-sdk/internal/signing"
-	"github.com/utilivo/utilivo-sdk/internal/templates"
-	"github.com/utilivo/utilivo-sdk/internal/util"
-	"github.com/utilivo/utilivo-sdk/internal/verify"
+	"utilivo/sdk/internal/archive"
+	"utilivo/sdk/internal/build"
+	"utilivo/sdk/internal/scaffold"
+	"utilivo/sdk/internal/signing"
+	"utilivo/sdk/internal/templates"
+	"utilivo/sdk/internal/util"
+	"utilivo/sdk/internal/verify"
 )
 
 func TestCreateVerifyBuildFlow(t *testing.T) {

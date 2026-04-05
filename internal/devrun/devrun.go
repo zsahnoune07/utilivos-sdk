@@ -21,8 +21,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/utilivo/utilivo-sdk/internal/manifest"
-	"github.com/utilivo/utilivo-sdk/internal/util"
+	"utilivo/sdk/internal/manifest"
+	"utilivo/sdk/internal/util"
 )
 
 const (

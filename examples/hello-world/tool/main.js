@@ -13,12 +13,8 @@
   const list = document.getElementById("list");
   const empty = document.getElementById("empty");
   const summary = document.getElementById("summary");
-  const statReady = document.getElementById("stat-ready");
-  const statSearch = document.getElementById("stat-search");
-  const statLocale = document.getElementById("stat-locale");
-  const statTheme = document.getElementById("stat-theme");
   const runtime = window.UtilivoRuntime;
-  if (!ui || !runtime || !button || !output || !clear || !name || !tone || !notes || !notify || !search || !status || !statusBody || !list || !empty || !summary || !statReady || !statSearch || !statLocale || !statTheme) return;
+  if (!ui || !runtime || !button || !output || !clear || !name || !tone || !notes || !notify || !search || !status || !statusBody || !list || !empty || !summary) return;
 
   const listItems = [
     { id: "calculator", title: "list.items.calculator.title", subtitle: "list.items.calculator.subtitle" },
@@ -29,17 +25,11 @@
 
   async function bootstrap() {
     ui.ensureToolPage();
-    const localeState = await ui.initLocalization({
+    await ui.initLocalization({
       defaultLocale: "en",
       supportedLocales: ["en"],
       basePath: "./locales",
     });
-
-    statLocale.textContent = localeState.locale;
-    statTheme.textContent = window.UtilivoHost?.theme?.resolved || "system";
-
-    let readyCount = 0;
-    let searchCount = 0;
 
     function getSerializableState() {
       return {
@@ -54,8 +44,6 @@
 
     function setSummary(count) {
       summary.textContent = ui.t("list.summary", { count: String(count) });
-      statSearch.textContent = String(searchCount);
-      statReady.textContent = String(readyCount);
     }
 
     function renderList(query) {
@@ -139,16 +127,11 @@
       write: applySerializableState,
       debounceMs: 400,
     });
-    window.UtilivoRuntime.registerSessionRestore((snapshot) => {
-      applySerializableState(snapshot);
-      session.persistNow();
-    });
     await session.hydrateFromHost();
 
     const renderReady = () => {
       output.textContent = ui.t("result.ready");
       status.hidden = true;
-      readyCount += 1;
       setSummary(listItems.length);
     };
 
@@ -169,7 +152,6 @@
     name.addEventListener("input", wireSessionPersist);
     notes.addEventListener("input", wireSessionPersist);
     search.addEventListener("input", () => {
-      searchCount += 1;
       renderList(search.value);
       wireSessionPersist();
     });

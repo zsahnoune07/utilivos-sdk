@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/utilivo/utilivo-sdk/internal/cli"
+	"utilivo/sdk/internal/cli"
 )
 
 func main() {

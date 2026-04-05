@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/utilivo/utilivo-sdk/internal/archive"
-	"github.com/utilivo/utilivo-sdk/internal/manifest"
-	"github.com/utilivo/utilivo-sdk/internal/signing"
-	plugintesting "github.com/utilivo/utilivo-sdk/internal/testing"
-	"github.com/utilivo/utilivo-sdk/internal/util"
-	"github.com/utilivo/utilivo-sdk/internal/verify"
+	"utilivo/sdk/internal/archive"
+	"utilivo/sdk/internal/manifest"
+	"utilivo/sdk/internal/signing"
+	plugintesting "utilivo/sdk/internal/testing"
+	"utilivo/sdk/internal/util"
+	"utilivo/sdk/internal/verify"
 )
 
 type Artifacts struct {

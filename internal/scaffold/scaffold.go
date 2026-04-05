@@ -8,9 +8,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/utilivo/utilivo-sdk/internal/manifest"
-	"github.com/utilivo/utilivo-sdk/internal/templates"
-	"github.com/utilivo/utilivo-sdk/internal/util"
+	"utilivo/sdk/internal/manifest"
+	"utilivo/sdk/internal/templates"
+	"utilivo/sdk/internal/util"
 )
 
 type Options struct {

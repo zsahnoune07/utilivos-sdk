@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/utilivo/utilivo-sdk/internal/manifest"
+	"utilivo/sdk/internal/manifest"
 )
 
 // optimizedIconMaxEdge is the maximum allowed width or height after scaling.

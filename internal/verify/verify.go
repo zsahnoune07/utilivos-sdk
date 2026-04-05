@@ -10,9 +10,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/utilivo/utilivo-sdk/internal/archive"
-	"github.com/utilivo/utilivo-sdk/internal/manifest"
-	"github.com/utilivo/utilivo-sdk/internal/util"
+	"utilivo/sdk/internal/archive"
+	"utilivo/sdk/internal/manifest"
+	"utilivo/sdk/internal/util"
 )
 
 var (

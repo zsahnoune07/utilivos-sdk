@@ -2,22 +2,6 @@
   "page": {
     "meta": {
       "title": "Hello World"
-    },
-    "title": "Hello World",
-    "subtitle": "Scaffolded with utilivo-sdk and rendered using host-aligned UI primitives."
-  },
-  "stats": {
-    "ready": {
-      "label": "Ready actions"
-    },
-    "search": {
-      "label": "Search updates"
-    },
-    "locale": {
-      "label": "Locale"
-    },
-    "theme": {
-      "label": "Theme"
     }
   },
   "form": {

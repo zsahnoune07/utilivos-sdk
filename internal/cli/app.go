@@ -11,16 +11,16 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/utilivo/utilivo-sdk/internal/archive"
-	"github.com/utilivo/utilivo-sdk/internal/build"
-	"github.com/utilivo/utilivo-sdk/internal/devrun"
-	"github.com/utilivo/utilivo-sdk/internal/doctor"
-	"github.com/utilivo/utilivo-sdk/internal/manifest"
-	"github.com/utilivo/utilivo-sdk/internal/scaffold"
-	"github.com/utilivo/utilivo-sdk/internal/signing"
-	plugintesting "github.com/utilivo/utilivo-sdk/internal/testing"
-	"github.com/utilivo/utilivo-sdk/internal/util"
-	"github.com/utilivo/utilivo-sdk/internal/verify"
+	"utilivo/sdk/internal/archive"
+	"utilivo/sdk/internal/build"
+	"utilivo/sdk/internal/devrun"
+	"utilivo/sdk/internal/doctor"
+	"utilivo/sdk/internal/manifest"
+	"utilivo/sdk/internal/scaffold"
+	"utilivo/sdk/internal/signing"
+	plugintesting "utilivo/sdk/internal/testing"
+	"utilivo/sdk/internal/util"
+	"utilivo/sdk/internal/verify"
 )
 
 func Run(argv []string, stdout, stderr io.Writer) (int, error) {

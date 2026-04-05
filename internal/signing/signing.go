@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/utilivo/utilivo-sdk/internal/util"
+	"utilivo/sdk/internal/util"
 )
 
 type KeyPair struct {

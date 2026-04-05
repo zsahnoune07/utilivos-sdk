@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/utilivo/utilivo-sdk/internal/signing"
-	"github.com/utilivo/utilivo-sdk/internal/util"
+	"utilivo/sdk/internal/signing"
+	"utilivo/sdk/internal/util"
 )
 
 type Status string

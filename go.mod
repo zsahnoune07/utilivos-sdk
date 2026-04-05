@@ -1,3 +1,3 @@
-module github.com/utilivo/utilivo-sdk
+module utilivo/sdk
 
 go 1.22

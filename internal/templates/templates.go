@@ -42,7 +42,7 @@ Build and maintain a production-minded plugin with strict manifest-driven behavi
 Infer practical defaults when requirements are missing, document assumptions, and keep moving.
 
 ## Core behavior
-1. Build first, ask rarely.
+1. Implement and validate; defer packaging to the maintainer unless they explicitly ask you to build.
 2. Prefer complete vertical slices over partial work.
 3. Keep code simple, modular, and maintainable.
 4. Avoid unnecessary dependencies or abstractions.
@@ -51,11 +51,11 @@ Infer practical defaults when requirements are missing, document assumptions, an
 7. Keep plugin runtime and packaging strictly manifest-driven.
 
 ## Required workflow
-- Run utilivo verify before every build.
-- Run utilivo test before every build.
-- Use utilivo build to produce release artifacts.
+- Run utilivo verify and utilivo test when making substantive changes (recommended before hand-off).
+- Maintainers run utilivo build to produce release artifacts after review.
+- Autonomous agents must not run utilivo build, utilivo pack, or signing steps unless the user explicitly requests it.
 - Keep manifest.json as the source of truth.
-- Publish signed .ubb bundles for distribution.
+- Publish signed .ubb bundles for distribution (maintainer workflow).
 
 ## Manifest contract rules
 - Keep required fields valid and complete.
@@ -73,7 +73,7 @@ Infer practical defaults when requirements are missing, document assumptions, an
 - Plugins must support light and dark mode through host-injected theme tokens.
 - Plugins must rely on CSS variables supplied by the host shell.
 - Plugins must keep user-facing strings under tool/locales/ with English as default.
-- Default to a simple title/subtitle header. Do not add eyebrow labels or decorative pill rows unless the tool has an explicit product requirement.
+- Lead with the primary workflow inside the first card using uv-section__title and uv-section__description. Omit a separate uv-tool-page__header unless the product needs it. Do not add eyebrow labels or decorative pill rows unless the tool has an explicit product requirement.
 - Use UtilivoRuntime.syncState for host session persistence; do not replace window.utilivo without forwarding persistState and loadState.
 
 ## Security baseline
@@ -83,10 +83,10 @@ Infer practical defaults when requirements are missing, document assumptions, an
 - Keep permissions minimal and explicit.
 
 ## Definition of done
-- Plugin can be verified, tested, built, and inspected end-to-end.
+- Plugin can be verified and tested end-to-end; release build is the maintainer step after review.
 - Manifest is valid and enforced by runtime/build workflows.
 - README and tests are updated with behavior changes.
-- Artifacts are deterministic .ubb packages and signed when required.
+- Release artifacts are deterministic .ubb packages and signed when required (maintainer).
 `, pluginName, slug)
 }
 
@@ -111,6 +111,10 @@ utilivo verify
 utilivo test
 utilivo build
 `+"```"+`
+
+## For AI and automated agents
+- Run utilivo verify and utilivo test when useful to validate changes.
+- Do not run utilivo build after implementing unless the user explicitly asks; the maintainer builds and reviews release artifacts.
 
 ## Plugin details
 - Slug: %s
@@ -148,13 +152,12 @@ func PlanMarkdown(pluginName, slug string) string {
 
 ## Phase 2: Core workflow
 - Implement the plugin's primary user flow in tool/.
-- Keep the default page header minimal; add eyebrow or pill treatments only when the tool has a real content requirement for them.
+- Lead with the first card (section title and description); avoid a separate page-level header and decorative chrome unless the product needs them.
 - Acceptance criteria: interaction works from tool/index.html end-to-end.
 
 ## Phase 3: Quality and release
 - Add or refine tests under tests/.
-- Build and inspect signed .ubb outputs.
-- Acceptance criteria: utilivo test and utilivo build both pass.
+- Acceptance criteria: utilivo verify and utilivo test pass; ready for the maintainer to run utilivo build and inspect signed .ubb outputs after review.
 `, pluginName, slug)
 }
 
@@ -195,30 +198,6 @@ func IndexHTML(pluginName, runtimeMode string) string {
   </head>
   <body class="uv-tool-page">
     <main class="uv-tool-page__content">
-      <header class="uv-tool-page__header">
-        <h1 class="uv-tool-page__title" data-i18n="page.title"></h1>
-        <p class="uv-tool-page__subtitle" data-i18n="page.subtitle"></p>
-      </header>
-
-      <section class="uv-card uv-section uv-pattern-dashboard">
-        <article class="uv-pattern-dashboard__stat">
-          <span class="uv-text-body-sm uv-text-muted" data-i18n="stats.ready.label"></span>
-          <strong id="stat-ready" class="uv-text-headline-sm"></strong>
-        </article>
-        <article class="uv-pattern-dashboard__stat">
-          <span class="uv-text-body-sm uv-text-muted" data-i18n="stats.search.label"></span>
-          <strong id="stat-search" class="uv-text-headline-sm"></strong>
-        </article>
-        <article class="uv-pattern-dashboard__stat">
-          <span class="uv-text-body-sm uv-text-muted" data-i18n="stats.locale.label"></span>
-          <strong id="stat-locale" class="uv-text-headline-sm"></strong>
-        </article>
-        <article class="uv-pattern-dashboard__stat">
-          <span class="uv-text-body-sm uv-text-muted" data-i18n="stats.theme.label"></span>
-          <strong id="stat-theme" class="uv-text-headline-sm"></strong>
-        </article>
-      </section>
-
       <section class="uv-card uv-section uv-pattern-form">
         <h2 class="uv-section__title" data-i18n="form.section.title"></h2>
         <p class="uv-section__description" data-i18n="form.section.description"></p>
@@ -304,12 +283,8 @@ func MainJS() string {
   const list = document.getElementById("list");
   const empty = document.getElementById("empty");
   const summary = document.getElementById("summary");
-  const statReady = document.getElementById("stat-ready");
-  const statSearch = document.getElementById("stat-search");
-  const statLocale = document.getElementById("stat-locale");
-  const statTheme = document.getElementById("stat-theme");
   const runtime = window.UtilivoRuntime;
-  if (!ui || !runtime || !button || !output || !clear || !name || !tone || !notes || !notify || !search || !status || !statusBody || !list || !empty || !summary || !statReady || !statSearch || !statLocale || !statTheme) return;
+  if (!ui || !runtime || !button || !output || !clear || !name || !tone || !notes || !notify || !search || !status || !statusBody || !list || !empty || !summary) return;
 
   const listItems = [
     { id: "calculator", title: "list.items.calculator.title", subtitle: "list.items.calculator.subtitle" },
@@ -320,17 +295,11 @@ func MainJS() string {
 
   async function bootstrap() {
     ui.ensureToolPage();
-    const localeState = await ui.initLocalization({
+    await ui.initLocalization({
       defaultLocale: "en",
       supportedLocales: ["en"],
       basePath: "./locales",
     });
-
-    statLocale.textContent = localeState.locale;
-    statTheme.textContent = window.UtilivoHost?.theme?.resolved || "system";
-
-    let readyCount = 0;
-    let searchCount = 0;
 
     function getSerializableState() {
       return {
@@ -345,8 +314,6 @@ func MainJS() string {
 
     function setSummary(count) {
       summary.textContent = ui.t("list.summary", { count: String(count) });
-      statSearch.textContent = String(searchCount);
-      statReady.textContent = String(readyCount);
     }
 
     function renderList(query) {
@@ -435,7 +402,6 @@ func MainJS() string {
     const renderReady = () => {
       output.textContent = ui.t("result.ready");
       status.hidden = true;
-      readyCount += 1;
       setSummary(listItems.length);
     };
 
@@ -456,7 +422,6 @@ func MainJS() string {
     name.addEventListener("input", wireSessionPersist);
     notes.addEventListener("input", wireSessionPersist);
     search.addEventListener("input", () => {
-      searchCount += 1;
       renderList(search.value);
       wireSessionPersist();
     });
@@ -537,22 +502,6 @@ func LocaleENJSON(pluginName string) string {
   "page": {
     "meta": {
       "title": %q
-    },
-    "title": %q,
-    "subtitle": "Scaffolded with utilivo-sdk and rendered using host-aligned UI primitives."
-  },
-  "stats": {
-    "ready": {
-      "label": "Ready actions"
-    },
-    "search": {
-      "label": "Search updates"
-    },
-    "locale": {
-      "label": "Locale"
-    },
-    "theme": {
-      "label": "Theme"
     }
   },
   "form": {
@@ -635,7 +584,7 @@ func LocaleENJSON(pluginName string) string {
     }
   }
 }
-`, escaped, escaped)
+`, escaped)
 }
 
 func ProjectJSON(slug string) string {

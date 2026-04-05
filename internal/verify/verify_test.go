@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/utilivo/utilivo-sdk/internal/manifest"
-	"github.com/utilivo/utilivo-sdk/internal/scaffold"
-	"github.com/utilivo/utilivo-sdk/internal/verify"
+	"utilivo/sdk/internal/manifest"
+	"utilivo/sdk/internal/scaffold"
+	"utilivo/sdk/internal/verify"
 )
 
 func TestVerifyFixtures(t *testing.T) {

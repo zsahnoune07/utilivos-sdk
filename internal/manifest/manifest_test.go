@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/utilivo/utilivo-sdk/internal/manifest"
+	"utilivo/sdk/internal/manifest"
 )
 
 func TestValidate_DefaultManifestIsValid(t *testing.T) {

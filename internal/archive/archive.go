@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/utilivo/utilivo-sdk/internal/manifest"
-	"github.com/utilivo/utilivo-sdk/internal/util"
+	"utilivo/sdk/internal/manifest"
+	"utilivo/sdk/internal/util"
 )
 
 var fixedZipTime = time.Date(1980, 1, 1, 0, 0, 0, 0, time.UTC) // nolint:gochecknoglobals

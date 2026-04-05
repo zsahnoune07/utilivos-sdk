@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/utilivo/utilivo-sdk/internal/manifest"
-	"github.com/utilivo/utilivo-sdk/internal/scaffold"
-	"github.com/utilivo/utilivo-sdk/internal/util"
+	"utilivo/sdk/internal/manifest"
+	"utilivo/sdk/internal/scaffold"
+	"utilivo/sdk/internal/util"
 )
 
 func TestCreateScaffold(t *testing.T) {
@@ -70,12 +70,13 @@ func TestCreateScaffold(t *testing.T) {
 	agentsText := string(agents)
 	for _, expected := range []string{
 		"operating contract",
-		"Build first, ask rarely.",
+		"Implement and validate; defer packaging",
 		"manifest-driven behavior",
 		"manifest.json",
 		"PLUGIN UI RULES",
 		"cannot hardcode product colors or redefine --uv-* tokens",
-		"simple title/subtitle header",
+		"Lead with the primary workflow",
+		"must not run utilivo build",
 	} {
 		if !strings.Contains(agentsText, expected) {
 			t.Fatalf("agents template missing expected text: %q", expected)

@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/utilivo/utilivo-sdk/internal/archive"
-	"github.com/utilivo/utilivo-sdk/internal/scaffold"
+	"utilivo/sdk/internal/archive"
+	"utilivo/sdk/internal/scaffold"
 )
 
 func TestDropToolUtilivoForHostMode(t *testing.T) {
