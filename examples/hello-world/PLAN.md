@@ -2,7 +2,7 @@
 
 ## Phase 1: Scaffold baseline
 - Confirm manifest metadata, tags, and permissions for hello-world.
-- Acceptance criteria: utilivo verify passes.
+- Acceptance criteria: utilivos verify passes.
 
 ## Phase 2: Core workflow
 - Implement the plugin's primary user flow in tool/.
@@ -11,4 +11,4 @@
 
 ## Phase 3: Quality and release
 - Add or refine tests under tests/.
-- Acceptance criteria: utilivo verify and utilivo test pass; ready for the maintainer to run utilivo build and inspect signed .ubb outputs after review.
+- Acceptance criteria: utilivos verify and utilivos test pass; ready for the maintainer to run utilivos build and inspect signed .ubb outputs after review.

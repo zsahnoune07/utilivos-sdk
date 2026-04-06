@@ -20,7 +20,7 @@ make build
 sudo make install
 ```
 
-Build first as your normal user. `make install` only installs the existing `bin/utilivo`; it does not rebuild the binary.
+Build first as your normal user. `make install` only installs the existing `bin/utilivos`; it does not rebuild the binary.
 
 If `make build` fails with `go: command not found`, verify the toolchain:
 
@@ -46,7 +46,7 @@ sudo make install
 
 Default install paths:
 
-- `/usr/local/bin/utilivo`
+- `/usr/local/bin/utilivos`
 - `/usr/local/bin/create`
 - `/usr/local/bin/verify`
 - `/usr/local/bin/test`
@@ -63,7 +63,7 @@ sudo make uninstall
 
 ```bash
 make deb
-sudo dpkg -i dist/utilivo-sdk_<version>_amd64.deb
+sudo dpkg -i dist/utilivos-sdk_<version>_amd64.deb
 ```
 
 If dependencies are missing:

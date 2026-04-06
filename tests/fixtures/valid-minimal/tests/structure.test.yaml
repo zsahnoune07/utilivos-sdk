@@ -9,13 +9,13 @@ required:
   - tool/main.js
   - tool/style.css
   - tool/locales/en.json
-  - tool/utilivo/base.css
-  - tool/utilivo/components.css
-  - tool/utilivo/layout.css
-  - tool/utilivo/tool.js
+  - tool/utilivos/base.css
+  - tool/utilivos/components.css
+  - tool/utilivos/layout.css
+  - tool/utilivos/tool.js
   - tool/assets/icon.png
   - tool/assets/thumb.png
   - tool/assets/screenshots/home.png
   - tests/
   - dist/
-  - .utilivo/project.json
+  - .utilivos/project.json

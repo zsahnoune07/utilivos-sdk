@@ -8,4 +8,4 @@ make deb
 
 This invokes `scripts/package_deb.sh`, staging the package under `.pkg/` and producing:
 
-- `dist/utilivo-sdk_<version>_amd64.deb`
+- `dist/utilivos-sdk_<version>_amd64.deb`

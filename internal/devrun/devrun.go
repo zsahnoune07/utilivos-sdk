@@ -21,8 +21,8 @@ import (
 	"sync"
 	"time"
 
-	"utilivo/sdk/internal/manifest"
-	"utilivo/sdk/internal/util"
+	"utilivos/sdk/internal/manifest"
+	"utilivos/sdk/internal/util"
 )
 
 const (
@@ -96,7 +96,7 @@ func Start(opts Options) (*Server, error) {
 		return nil, fmt.Errorf("load manifest.json: %w", err)
 	}
 	if report := manifest.Validate(m); report.Errors > 0 {
-		return nil, fmt.Errorf("manifest validation failed with %d error(s); run `utilivo verify --dir %s`", report.Errors, absRoot)
+		return nil, fmt.Errorf("manifest validation failed with %d error(s); run `utilivos verify --dir %s`", report.Errors, absRoot)
 	}
 
 	host := strings.TrimSpace(opts.Host)
@@ -206,13 +206,13 @@ func (s *Server) route(w http.ResponseWriter, r *http.Request) {
 	case cleanPath == "/":
 		s.serveShell(w, r)
 		return
-	case cleanPath == "/__utilivo__/manifest":
+	case cleanPath == "/__utilivos__/manifest":
 		s.serveManifest(w, r)
 		return
-	case cleanPath == "/__utilivo__/revision":
+	case cleanPath == "/__utilivos__/revision":
 		s.serveRevision(w, r)
 		return
-	case cleanPath == "/__utilivo__/live":
+	case cleanPath == "/__utilivos__/live":
 		s.serveLive(w, r)
 		return
 	case strings.TrimPrefix(cleanPath, "/") == s.entryRel:
@@ -272,7 +272,7 @@ func (s *Server) serveShell(w http.ResponseWriter, _ *http.Request) {
 	_, _ = fmt.Fprintf(w, "  <head>\n")
 	_, _ = fmt.Fprintf(w, "    <meta charset=\"utf-8\" />\n")
 	_, _ = fmt.Fprintf(w, "    <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />\n")
-	_, _ = fmt.Fprintf(w, "    <title>%s · utilivo run</title>\n", html.EscapeString(s.manifest.Name))
+	_, _ = fmt.Fprintf(w, "    <title>%s · utilivos run</title>\n", html.EscapeString(s.manifest.Name))
 	_, _ = fmt.Fprintf(w, "    <style>\n")
 	_, _ = fmt.Fprintf(w, "      :root { color-scheme: light dark; }\n")
 	_, _ = fmt.Fprintf(w, "      * { box-sizing: border-box; }\n")
@@ -288,10 +288,10 @@ func (s *Server) serveShell(w http.ResponseWriter, _ *http.Request) {
 	_, _ = fmt.Fprintf(w, "  <body>\n")
 	_, _ = fmt.Fprintf(w, "    <main class=\"uv-dev-shell\">\n")
 	_, _ = fmt.Fprintf(w, "      <header class=\"uv-dev-shell__bar\">\n")
-	_, _ = fmt.Fprintf(w, "        <p class=\"uv-dev-shell__title\">utilivo run · %s (%s)</p>\n", html.EscapeString(s.manifest.Slug), html.EscapeString(s.manifest.Version))
+	_, _ = fmt.Fprintf(w, "        <p class=\"uv-dev-shell__title\">utilivos run · %s (%s)</p>\n", html.EscapeString(s.manifest.Slug), html.EscapeString(s.manifest.Version))
 	_, _ = fmt.Fprintf(w, "        <p class=\"uv-dev-shell__meta\">entry: <code>%s</code> · theme: <code>%s</code> · permissions: <code>%s</code></p>\n", html.EscapeString(s.entryRel), html.EscapeString(s.theme), html.EscapeString(permissionText))
 	_, _ = fmt.Fprintf(w, "      </header>\n")
-	_, _ = fmt.Fprintf(w, "      <iframe id=\"uv-dev-frame\" class=\"uv-dev-shell__frame\" src=\"%s\" title=\"Utilivo plugin runtime\"></iframe>\n", html.EscapeString(entryURL))
+	_, _ = fmt.Fprintf(w, "      <iframe id=\"uv-dev-frame\" class=\"uv-dev-shell__frame\" src=\"%s\" title=\"Utilivos plugin runtime\"></iframe>\n", html.EscapeString(entryURL))
 	_, _ = fmt.Fprintf(w, "    </main>\n")
 	_, _ = fmt.Fprintf(w, "  </body>\n")
 	_, _ = fmt.Fprintf(w, "</html>\n")
@@ -368,8 +368,8 @@ func (s *Server) serveEntryWithPrelude(w http.ResponseWriter, r *http.Request) {
 	}
 
 	htmlDoc := string(b)
-	if manifest.RuntimeModeOrDefault(s.manifest.RuntimeMode) == "host" && util.Exists(filepath.Join(s.root, "tool", "utilivo", "base.css")) {
-		htmlDoc = injectHostDevUtilivo(htmlDoc)
+	if manifest.RuntimeModeOrDefault(s.manifest.RuntimeMode) == "host" && util.Exists(filepath.Join(s.root, "tool", "utilivos", "base.css")) {
+		htmlDoc = injectHostDevUtilivos(htmlDoc)
 	}
 	injected := injectPrelude(htmlDoc, s.buildPreludeScript(r.Host))
 	_, _ = w.Write([]byte(injected))
@@ -405,7 +405,7 @@ func (s *Server) buildPreludeScript(requestHost string) string {
 		"runtime": map[string]any{
 			"project_root":  s.root,
 			"entry_path":    s.entryRel,
-			"live_endpoint": "/__utilivo__/live",
+			"live_endpoint": "/__utilivos__/live",
 			"revision":      s.revision.Current(),
 			"origin":        fmt.Sprintf("http://%s", requestHost),
 			"started_at":    s.startedAt.Format(time.RFC3339),
@@ -457,7 +457,7 @@ func (s *Server) buildPreludeScript(requestHost string) string {
     document.documentElement.setAttribute("data-uv-theme", resolvedTheme);
   }
 
-  const utilivoHost = deepFreeze({
+  const utilivosHost = deepFreeze({
     mode: "dev",
     manifest: hostPayload.manifest,
     runtime: hostPayload.runtime,
@@ -468,18 +468,18 @@ func (s *Server) buildPreludeScript(requestHost string) string {
     capabilities: hostPayload.capabilities,
   });
 
-  if (!Object.prototype.hasOwnProperty.call(window, "UtilivoHost")) {
-    Object.defineProperty(window, "UtilivoHost", {
-      value: utilivoHost,
+  if (!Object.prototype.hasOwnProperty.call(window, "UtilivosHost")) {
+    Object.defineProperty(window, "UtilivosHost", {
+      value: utilivosHost,
       writable: false,
       configurable: false,
       enumerable: true,
     });
   }
 
-  if (!window.utilivo) {
+  if (!window.utilivos) {
     let devEphemeralState = null;
-    window.utilivo = {
+    window.utilivos = {
       persistState(payload) {
         return new Promise((resolve) => {
           try {
@@ -502,8 +502,8 @@ func (s *Server) buildPreludeScript(requestHost string) string {
   }
 
   const applyThemePayload = () => {
-    if (window.UtilivoUI && typeof window.UtilivoUI.applyThemePayload === "function") {
-      window.UtilivoUI.applyThemePayload({ mode: resolvedTheme, tokens: {} });
+    if (window.UtilivosUI && typeof window.UtilivosUI.applyThemePayload === "function") {
+      window.UtilivosUI.applyThemePayload({ mode: resolvedTheme, tokens: {} });
     }
   };
 
@@ -537,7 +537,7 @@ func (s *Server) buildPreludeScript(requestHost string) string {
     overlay.style.display = "none";
 
     const title = document.createElement("strong");
-    title.textContent = "utilivo run error";
+    title.textContent = "utilivos run error";
     title.style.display = "block";
     title.style.marginBottom = "8px";
 
@@ -549,7 +549,7 @@ func (s *Server) buildPreludeScript(requestHost string) string {
     const note = document.createElement("p");
     note.style.margin = "10px 0 0";
     note.style.font = "11px/1.35 ui-sans-serif, system-ui, sans-serif";
-    note.textContent = "Fix the error and save. utilivo run reloads the tool automatically.";
+    note.textContent = "Fix the error and save. utilivos run reloads the tool automatically.";
 
     overlay.appendChild(title);
     overlay.appendChild(message);
@@ -699,14 +699,14 @@ func statRecord(rel string, stat fs.FileInfo) string {
 	return fmt.Sprintf("%s|%d|%d", rel, stat.Size(), stat.ModTime().UnixNano())
 }
 
-func injectHostDevUtilivo(htmlDoc string) string {
-	snippet := `    <!-- utilivo run: UI kit for host-mode dev only (omitted from .ubb) -->
-    <link rel="stylesheet" href="./utilivo/base.css" />
-    <link rel="stylesheet" href="./utilivo/layout.css" />
-    <link rel="stylesheet" href="./utilivo/components.css" />
+func injectHostDevUtilivos(htmlDoc string) string {
+	snippet := `    <!-- utilivos run: UI kit for host-mode dev only (omitted from .ubb) -->
+    <link rel="stylesheet" href="./utilivos/base.css" />
+    <link rel="stylesheet" href="./utilivos/layout.css" />
+    <link rel="stylesheet" href="./utilivos/components.css" />
 `
 	htmlDoc = injectAfterHeadOpen(htmlDoc, snippet)
-	htmlDoc = injectBeforeClosingBody(htmlDoc, `    <script src="./utilivo/tool.js"></script>`)
+	htmlDoc = injectBeforeClosingBody(htmlDoc, `    <script src="./utilivos/tool.js"></script>`)
 	return htmlDoc
 }
 

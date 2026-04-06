@@ -5,7 +5,7 @@ import (
 	"runtime"
 	"testing"
 
-	plugintesting "utilivo/sdk/internal/testing"
+	plugintesting "utilivos/sdk/internal/testing"
 )
 
 func TestRunBuiltInTests(t *testing.T) {

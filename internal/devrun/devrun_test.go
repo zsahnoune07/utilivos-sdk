@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"utilivo/sdk/internal/devrun"
-	"utilivo/sdk/internal/scaffold"
-	"utilivo/sdk/internal/templates"
+	"utilivos/sdk/internal/devrun"
+	"utilivos/sdk/internal/scaffold"
+	"utilivos/sdk/internal/templates"
 )
 
 func TestServerStartsAndServesDevRuntime(t *testing.T) {
@@ -31,8 +31,8 @@ func TestServerStartsAndServesDevRuntime(t *testing.T) {
 	client := &http.Client{Timeout: 5 * time.Second}
 
 	shellBody := mustGET(t, client, server.URL()+"/")
-	if !strings.Contains(shellBody, "utilivo run") {
-		t.Fatalf("shell response missing utilivo run marker: %s", shellBody)
+	if !strings.Contains(shellBody, "utilivos run") {
+		t.Fatalf("shell response missing utilivos run marker: %s", shellBody)
 	}
 	if !strings.Contains(shellBody, server.EntryPath()) {
 		t.Fatalf("shell response missing entry path %q", server.EntryPath())
@@ -40,18 +40,18 @@ func TestServerStartsAndServesDevRuntime(t *testing.T) {
 
 	entryBody := mustGET(t, client, server.URL()+"/"+server.EntryPath())
 	for _, expected := range []string{
-		"UtilivoHost",
+		"UtilivosHost",
 		"capabilities",
 		"persistState",
 		"__uv-dev-error-overlay",
-		"/__utilivo__/live",
+		"/__utilivos__/live",
 	} {
 		if !strings.Contains(entryBody, expected) {
 			t.Fatalf("entry response missing %q", expected)
 		}
 	}
 
-	manifestBody := mustGET(t, client, server.URL()+"/__utilivo__/manifest")
+	manifestBody := mustGET(t, client, server.URL()+"/__utilivos__/manifest")
 	var payload struct {
 		Manifest struct {
 			Slug string `json:"slug"`
@@ -89,7 +89,7 @@ func TestLiveEndpointDetectsRevisionChanges(t *testing.T) {
 	}
 
 	client := &http.Client{Timeout: 30 * time.Second}
-	endpoint := server.URL() + "/__utilivo__/live?since=" + url.QueryEscape(initial)
+	endpoint := server.URL() + "/__utilivos__/live?since=" + url.QueryEscape(initial)
 
 	type result struct {
 		payload devrun.LiveResponse
@@ -129,7 +129,7 @@ func TestLiveEndpointDetectsRevisionChanges(t *testing.T) {
 	}
 }
 
-func TestHostModeRunInjectsUtilivoWhenKitOnDisk(t *testing.T) {
+func TestHostModeRunInjectsUtilivosWhenKitOnDisk(t *testing.T) {
 	t.Parallel()
 	project := filepath.Join(t.TempDir(), "run-host")
 	if _, err := scaffold.Create(scaffold.Options{TargetPath: project}); err != nil {
@@ -165,11 +165,11 @@ func TestHostModeRunInjectsUtilivoWhenKitOnDisk(t *testing.T) {
 
 	client := &http.Client{Timeout: 5 * time.Second}
 	entryBody := mustGET(t, client, server.URL()+"/"+server.EntryPath())
-	if !strings.Contains(entryBody, `utilivo/base.css`) {
-		t.Fatal("expected injected utilivo CSS in entry response")
+	if !strings.Contains(entryBody, `utilivos/base.css`) {
+		t.Fatal("expected injected utilivos CSS in entry response")
 	}
-	if !strings.Contains(entryBody, `utilivo/tool.js`) {
-		t.Fatal("expected injected utilivo/tool.js")
+	if !strings.Contains(entryBody, `utilivos/tool.js`) {
+		t.Fatal("expected injected utilivos/tool.js")
 	}
 }
 
@@ -189,14 +189,14 @@ func TestPreludeInjectsHostMetadataAndOverlayBootstrap(t *testing.T) {
 	entryBody := mustGET(t, client, server.URL()+"/"+server.EntryPath())
 
 	for _, expected := range []string{
-		`Object.defineProperty(window, "UtilivoHost"`,
+		`Object.defineProperty(window, "UtilivosHost"`,
 		"deepFreeze",
 		`mode: "dev"`,
 		"capabilities: hostPayload.capabilities",
 		"devEphemeralState",
 		"__uv-dev-error-overlay",
-		"Fix the error and save. utilivo run reloads the tool automatically.",
-		"/__utilivo__/live",
+		"Fix the error and save. utilivos run reloads the tool automatically.",
+		"/__utilivos__/live",
 	} {
 		if !strings.Contains(entryBody, expected) {
 			t.Fatalf("entry response missing %q", expected)

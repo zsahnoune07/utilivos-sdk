@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"utilivo/sdk/internal/archive"
-	"utilivo/sdk/internal/manifest"
-	"utilivo/sdk/internal/signing"
-	plugintesting "utilivo/sdk/internal/testing"
-	"utilivo/sdk/internal/util"
-	"utilivo/sdk/internal/verify"
+	"utilivos/sdk/internal/archive"
+	"utilivos/sdk/internal/manifest"
+	"utilivos/sdk/internal/signing"
+	plugintesting "utilivos/sdk/internal/testing"
+	"utilivos/sdk/internal/util"
+	"utilivos/sdk/internal/verify"
 )
 
 type Artifacts struct {
@@ -64,7 +64,7 @@ func Pack(root, outDir string) (Artifacts, error) {
 	if err != nil {
 		return Artifacts{}, err
 	}
-	entries = archive.DropToolUtilivoForHostMode(entries, manifest.RuntimeModeOrDefault(m.RuntimeMode) == "host")
+	entries = archive.DropToolUtilivosForHostMode(entries, manifest.RuntimeModeOrDefault(m.RuntimeMode) == "host")
 	entries, err = archive.OptimizeManifestIcon(absRoot, m, entries)
 	if err != nil {
 		return Artifacts{}, err

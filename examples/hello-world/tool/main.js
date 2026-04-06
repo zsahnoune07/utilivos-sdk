@@ -1,5 +1,5 @@
 (() => {
-  const ui = window.UtilivoUI;
+  const ui = window.UtilivosUI;
   const button = document.getElementById("ping");
   const clear = document.getElementById("clear");
   const name = document.getElementById("name");
@@ -13,7 +13,7 @@
   const list = document.getElementById("list");
   const empty = document.getElementById("empty");
   const summary = document.getElementById("summary");
-  const runtime = window.UtilivoRuntime;
+  const runtime = window.UtilivosRuntime;
   if (!ui || !runtime || !button || !output || !clear || !name || !tone || !notes || !notify || !search || !status || !statusBody || !list || !empty || !summary) return;
 
   const listItems = [
@@ -122,7 +122,7 @@
       renderList(search.value);
     }
 
-    const session = window.UtilivoRuntime.syncState({
+    const session = window.UtilivosRuntime.syncState({
       read: getSerializableState,
       write: applySerializableState,
       debounceMs: 400,

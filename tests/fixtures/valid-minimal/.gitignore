@@ -1,6 +1,6 @@
 dist/*.ubb
-dist/*.utilivo.zip
+dist/*.utilivos.zip
 dist/*.sig
 dist/*.sha256
 dist/*.manifest.json
-.utilivo/tmp/
+.utilivos/tmp/

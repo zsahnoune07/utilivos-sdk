@@ -1,4 +1,4 @@
-// Package bundlemedia documents HTTP metadata for Utilivo plugin bundle (.ubb) artifacts.
+// Package bundlemedia documents HTTP metadata for Utilivos plugin bundle (.ubb) artifacts.
 package bundlemedia
 
 // PluginBundleContentType is the recommended Content-Type for .ubb payloads on upload

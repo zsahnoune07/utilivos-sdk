@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
-BINARY := utilivo
-MODULE := gitlab.com/utilivo/utilivo-sdk
+BINARY := utilivos
+MODULE := utilivos/sdk
 VERSION ?= 0.1.8
 PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
@@ -12,7 +12,7 @@ all: build
 
 build:
 	@mkdir -p bin
-	go build -trimpath -ldflags "-s -w -X $(MODULE)/internal/util.Version=$(VERSION)" -o bin/$(BINARY) ./cmd/utilivo
+	go build -trimpath -ldflags "-s -w -X $(MODULE)/internal/util.Version=$(VERSION)" -o bin/$(BINARY) ./cmd/utilivos
 
 test:
 	go test ./...
@@ -21,7 +21,7 @@ lint:
 	go vet ./...
 
 run-help:
-	go run ./cmd/utilivo --help
+	go run ./cmd/utilivos --help
 
 install:
 	@test -x bin/$(BINARY) || (echo "missing bin/$(BINARY); run 'make build' first" >&2; exit 1)

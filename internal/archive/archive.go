@@ -14,8 +14,8 @@ import (
 	"strings"
 	"time"
 
-	"utilivo/sdk/internal/manifest"
-	"utilivo/sdk/internal/util"
+	"utilivos/sdk/internal/manifest"
+	"utilivos/sdk/internal/util"
 )
 
 var fixedZipTime = time.Date(1980, 1, 1, 0, 0, 0, 0, time.UTC) // nolint:gochecknoglobals
@@ -101,15 +101,15 @@ func CollectPackageFiles(root string) ([]Entry, error) {
 	return entries, nil
 }
 
-// DropToolUtilivoForHostMode removes tool/utilivo/* from the package when runtime_mode is host.
-// Plugins may keep that directory for styled local dev (utilivo run injects these assets); it must not ship in the .ubb.
-func DropToolUtilivoForHostMode(entries []Entry, hostMode bool) []Entry {
+// DropToolUtilivosForHostMode removes tool/utilivos/* from the package when runtime_mode is host.
+// Plugins may keep that directory for styled local dev (utilivos run injects these assets); it must not ship in the .ubb.
+func DropToolUtilivosForHostMode(entries []Entry, hostMode bool) []Entry {
 	if !hostMode {
 		return entries
 	}
 	out := make([]Entry, 0, len(entries))
 	for _, e := range entries {
-		if strings.HasPrefix(e.RelPath, "tool/utilivo/") {
+		if strings.HasPrefix(e.RelPath, "tool/utilivos/") {
 			continue
 		}
 		out = append(out, e)
@@ -313,7 +313,7 @@ func IsForbiddenArchivePath(rel string) bool {
 
 func shouldSkipDir(rel string) bool {
 	rel = strings.TrimSpace(filepath.ToSlash(rel))
-	return rel == "dist" || rel == "tests" || rel == ".utilivo" || rel == "node_modules" || rel == ".git"
+	return rel == "dist" || rel == "tests" || rel == ".utilivos" || rel == "node_modules" || rel == ".git"
 }
 
 func shouldInclude(rel string) bool {

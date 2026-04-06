@@ -1,5 +1,5 @@
 (() => {
-  const ui = window.UtilivoUI;
+  const ui = window.UtilivosUI;
   const button = document.getElementById("ping");
   const clear = document.getElementById("clear");
   const name = document.getElementById("name");

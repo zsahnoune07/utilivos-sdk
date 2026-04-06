@@ -1,7 +1,7 @@
 # AGENTS.md
 
 Use this file as the operating contract for this plugin project.
-This template is based on the Utilivo AGENTS contract.
+This template is based on the Utilivos AGENTS contract.
 
 ## Plugin context
 - Name: Hello World
@@ -21,9 +21,9 @@ Infer practical defaults when requirements are missing, document assumptions, an
 7. Keep plugin runtime and packaging strictly manifest-driven.
 
 ## Required workflow
-- Run utilivo verify and utilivo test when making substantive changes (recommended before hand-off).
-- Maintainers run utilivo build to produce release artifacts after review.
-- Autonomous agents must not run utilivo build, utilivo pack, or signing steps unless the user explicitly requests it.
+- Run utilivos verify and utilivos test when making substantive changes (recommended before hand-off).
+- Maintainers run utilivos build to produce release artifacts after review.
+- Autonomous agents must not run utilivos build, utilivos pack, or signing steps unless the user explicitly requests it.
 - Keep manifest.json as the source of truth.
 - Publish signed .ubb bundles for distribution (maintainer workflow).
 
@@ -38,13 +38,13 @@ Infer practical defaults when requirements are missing, document assumptions, an
 - min_app_version and api_version must be intentional and valid.
 
 ## PLUGIN UI RULES
-- Plugins must use utilivo-ui components.
+- Plugins must use utilivos-ui components.
 - Plugins cannot hardcode product colors or redefine --uv-* tokens.
 - Plugins must support light and dark mode through host-injected theme tokens.
 - Plugins must rely on CSS variables supplied by the host shell.
 - Plugins must keep user-facing strings under tool/locales/ with English as default.
 - Lead with the primary workflow inside the first card using uv-section__title and uv-section__description. Omit a separate uv-tool-page__header unless the product needs it. Do not add eyebrow labels or decorative pill rows unless the tool has an explicit product requirement.
-- Use UtilivoRuntime.syncState for host session persistence; do not replace window.utilivo without forwarding persistState and loadState.
+- Use UtilivosRuntime.syncState for host session persistence; do not replace window.utilivos without forwarding persistState and loadState.
 
 ## Security baseline
 - Never commit private keys, tokens, or env secrets.

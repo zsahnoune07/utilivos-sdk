@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"utilivo/sdk/internal/manifest"
-	"utilivo/sdk/internal/scaffold"
-	"utilivo/sdk/internal/util"
+	"utilivos/sdk/internal/manifest"
+	"utilivos/sdk/internal/scaffold"
+	"utilivos/sdk/internal/util"
 )
 
 func TestCreateScaffold(t *testing.T) {
@@ -35,18 +35,18 @@ func TestCreateScaffold(t *testing.T) {
 		"tool/main.js",
 		"tool/style.css",
 		"tool/locales/en.json",
-		"tool/utilivo/base.css",
-		"tool/utilivo/components.css",
-		"tool/utilivo/layout.css",
-		"tool/utilivo/utilities.css",
-		"tool/utilivo/patterns.css",
-		"tool/utilivo/tool.js",
+		"tool/utilivos/base.css",
+		"tool/utilivos/components.css",
+		"tool/utilivos/layout.css",
+		"tool/utilivos/utilities.css",
+		"tool/utilivos/patterns.css",
+		"tool/utilivos/tool.js",
 		"tool/assets/icon.png",
 		"tool/assets/thumb.png",
 		"tool/assets/screenshots/home.png",
 		"tests",
 		"dist",
-		".utilivo/project.json",
+		".utilivos/project.json",
 	}
 	for _, rel := range required {
 		if !util.Exists(filepath.Join(created, rel)) {
@@ -76,7 +76,7 @@ func TestCreateScaffold(t *testing.T) {
 		"PLUGIN UI RULES",
 		"cannot hardcode product colors or redefine --uv-* tokens",
 		"Lead with the primary workflow",
-		"must not run utilivo build",
+		"must not run utilivos build",
 	} {
 		if !strings.Contains(agentsText, expected) {
 			t.Fatalf("agents template missing expected text: %q", expected)
@@ -103,10 +103,10 @@ func TestCreateScaffold(t *testing.T) {
 	}
 	indexText := string(indexHTML)
 	for _, expected := range []string{
-		"./utilivo/base.css",
-		"./utilivo/layout.css",
-		"./utilivo/components.css",
-		"./utilivo/tool.js",
+		"./utilivos/base.css",
+		"./utilivos/layout.css",
+		"./utilivos/components.css",
+		"./utilivos/tool.js",
 		"uv-tool-page",
 		"data-i18n=",
 		"data-i18n-placeholder=",
@@ -140,7 +140,7 @@ func TestScaffoldIncludesFrameworkPrimitivesAndThemeGuards(t *testing.T) {
 		t.Fatalf("create scaffold: %v", err)
 	}
 
-	baseCSS, err := os.ReadFile(filepath.Join(target, "tool", "utilivo", "base.css"))
+	baseCSS, err := os.ReadFile(filepath.Join(target, "tool", "utilivos", "base.css"))
 	if err != nil {
 		t.Fatalf("read base.css: %v", err)
 	}
@@ -157,7 +157,7 @@ func TestScaffoldIncludesFrameworkPrimitivesAndThemeGuards(t *testing.T) {
 		}
 	}
 
-	utilitiesCSS, err := os.ReadFile(filepath.Join(target, "tool", "utilivo", "utilities.css"))
+	utilitiesCSS, err := os.ReadFile(filepath.Join(target, "tool", "utilivos", "utilities.css"))
 	if err != nil {
 		t.Fatalf("read utilities.css: %v", err)
 	}
@@ -174,7 +174,7 @@ func TestScaffoldIncludesFrameworkPrimitivesAndThemeGuards(t *testing.T) {
 		}
 	}
 
-	componentsCSS, err := os.ReadFile(filepath.Join(target, "tool", "utilivo", "components.css"))
+	componentsCSS, err := os.ReadFile(filepath.Join(target, "tool", "utilivos", "components.css"))
 	if err != nil {
 		t.Fatalf("read components.css: %v", err)
 	}
@@ -194,7 +194,7 @@ func TestScaffoldIncludesFrameworkPrimitivesAndThemeGuards(t *testing.T) {
 		}
 	}
 
-	patternsCSS, err := os.ReadFile(filepath.Join(target, "tool", "utilivo", "patterns.css"))
+	patternsCSS, err := os.ReadFile(filepath.Join(target, "tool", "utilivos", "patterns.css"))
 	if err != nil {
 		t.Fatalf("read patterns.css: %v", err)
 	}
@@ -214,7 +214,7 @@ func TestScaffoldIncludesFrameworkPrimitivesAndThemeGuards(t *testing.T) {
 		}
 	}
 
-	layoutCSS, err := os.ReadFile(filepath.Join(target, "tool", "utilivo", "layout.css"))
+	layoutCSS, err := os.ReadFile(filepath.Join(target, "tool", "utilivos", "layout.css"))
 	if err != nil {
 		t.Fatalf("read layout.css: %v", err)
 	}

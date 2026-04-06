@@ -8,9 +8,9 @@ import (
 	"sort"
 	"strings"
 
-	"utilivo/sdk/internal/manifest"
-	"utilivo/sdk/internal/templates"
-	"utilivo/sdk/internal/util"
+	"utilivos/sdk/internal/manifest"
+	"utilivos/sdk/internal/templates"
+	"utilivos/sdk/internal/util"
 )
 
 type Options struct {
@@ -59,10 +59,10 @@ func Create(opts Options) (string, error) {
 		return "", fmt.Errorf("invalid slug %q", opts.Slug)
 	}
 	if strings.TrimSpace(opts.Author) == "" {
-		opts.Author = "Utilivo Developer"
+		opts.Author = "Utilivos Developer"
 	}
 	if len(opts.Tags) == 0 {
-		opts.Tags = []string{"starter", "tool", "utilivo"}
+		opts.Tags = []string{"starter", "tool", "utilivos"}
 	}
 	sort.Strings(opts.Tags)
 
@@ -103,10 +103,10 @@ func Create(opts Options) (string, error) {
 		"tool/assets/screenshots",
 		"tests",
 		"dist",
-		".utilivo",
+		".utilivos",
 	}
 	if manifest.RuntimeModeOrDefault(m.RuntimeMode) == "bundled" {
-		dirs = append(dirs, "tool/utilivo")
+		dirs = append(dirs, "tool/utilivos")
 	}
 	for _, dir := range dirs {
 		if err := os.MkdirAll(filepath.Join(absTarget, dir), 0o755); err != nil {
@@ -129,16 +129,16 @@ func Create(opts Options) (string, error) {
 		"tool/locales/en.json":      templates.LocaleENJSON(opts.Name),
 		"tests/manifest.test.json":  templates.ManifestTestJSON(),
 		"tests/structure.test.yaml": templates.StructureTestYAML(manifest.RuntimeModeOrDefault(m.RuntimeMode)),
-		".utilivo/project.json":     templates.ProjectJSON(opts.Slug),
+		".utilivos/project.json":     templates.ProjectJSON(opts.Slug),
 		".gitignore":                defaultGitignore(),
 	}
 	if manifest.RuntimeModeOrDefault(m.RuntimeMode) == "bundled" {
-		files["tool/utilivo/base.css"] = templates.BaseCSS()
-		files["tool/utilivo/components.css"] = templates.ComponentsCSS()
-		files["tool/utilivo/layout.css"] = templates.LayoutCSS()
-		files["tool/utilivo/utilities.css"] = templates.UtilitiesCSS()
-		files["tool/utilivo/patterns.css"] = templates.PatternsCSS()
-		files["tool/utilivo/tool.js"] = templates.ToolJS()
+		files["tool/utilivos/base.css"] = templates.BaseCSS()
+		files["tool/utilivos/components.css"] = templates.ComponentsCSS()
+		files["tool/utilivos/layout.css"] = templates.LayoutCSS()
+		files["tool/utilivos/utilities.css"] = templates.UtilitiesCSS()
+		files["tool/utilivos/patterns.css"] = templates.PatternsCSS()
+		files["tool/utilivos/tool.js"] = templates.ToolJS()
 	}
 	for rel, content := range files {
 		path := filepath.Join(absTarget, rel)
@@ -176,10 +176,10 @@ func humanize(v string) string {
 
 func defaultGitignore() string {
 	return `dist/*.ubb
-dist/*.utilivo.zip
+dist/*.utilivos.zip
 dist/*.sig
 dist/*.sha256
 dist/*.manifest.json
-.utilivo/tmp/
+.utilivos/tmp/
 `
 }

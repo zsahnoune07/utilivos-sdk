@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"strings"
 
-	"utilivo/sdk/internal/util"
+	"utilivos/sdk/internal/util"
 )
 
 var (
@@ -127,14 +127,14 @@ func AllowedUITypes() []string {
 }
 
 func Default(pluginName, slug, author string) Manifest {
-	tags := []string{"starter", "tool", "utilivo"}
+	tags := []string{"starter", "tool", "utilivos"}
 	sort.Strings(tags)
 	return Manifest{
-		ID:                    fmt.Sprintf("com.utilivo.plugin.%s", slug),
+		ID:                    fmt.Sprintf("com.utilivos.plugin.%s", slug),
 		Name:                  pluginName,
 		Slug:                  slug,
 		Version:               "1.0.0",
-		Description:           fmt.Sprintf("%s plugin for Utilivo.", pluginName),
+		Description:           fmt.Sprintf("%s plugin for Utilivos.", pluginName),
 		Author:                author,
 		Entry:                 "tool/index.html",
 		Icon:                  "tool/assets/icon.png",
@@ -192,7 +192,7 @@ func MergeLatestRequirements(m Manifest) (Manifest, []string) {
 	if strings.TrimSpace(out.ID) == "" {
 		slugTrim := strings.TrimSpace(out.Slug)
 		if slugTrim != "" && IsValidSlug(slugTrim) {
-			out.ID = fmt.Sprintf("com.utilivo.plugin.%s", slugTrim)
+			out.ID = fmt.Sprintf("com.utilivos.plugin.%s", slugTrim)
 			note("id")
 		}
 	}
@@ -348,7 +348,7 @@ func Validate(m Manifest) util.Report {
 	}
 
 	if !idPattern.MatchString(m.ID) {
-		r.Add(util.SeverityError, "manifest.id", "manifest.json", "id must look like com.utilivo.plugin.my-plugin")
+		r.Add(util.SeverityError, "manifest.id", "manifest.json", "id must look like com.utilivos.plugin.my-plugin")
 	}
 	if !IsValidSlug(m.Slug) {
 		r.Add(util.SeverityError, "manifest.slug", "manifest.json", "slug must match ^[a-z0-9]+(?:-[a-z0-9]+)*$")

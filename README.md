@@ -1,30 +1,30 @@
-# utilivo-sdk
+# utilivos-sdk
 
-`utilivo-sdk` is a lightweight, strict Go CLI for building Utilivo plugins end-to-end.
+`utilivos-sdk` is a lightweight, strict Go CLI for building Utilivos plugins end-to-end.
 
 The Flutter mobile shell is the single source of truth for design tokens. Plugins consume the shared web UI kit generated from that token set and rendered inside the host `WebView`.
 
 Primary command:
 
 ```bash
-utilivo
+utilivos
 ```
 
 Primary workflow:
 
 ```bash
-utilivo create my-plugin
+utilivos create my-plugin
 cd my-plugin
-utilivo run
-utilivo verify
-utilivo test
-utilivo build
+utilivos run
+utilivos verify
+utilivos test
+utilivos build
 ```
 
 ## Features
 
 - Strict plugin scaffold generation
-- Browser-ready local dev runtime (`utilivo run`) with live refresh
+- Browser-ready local dev runtime (`utilivos run`) with live refresh
 - Strict manifest-driven verification
 - Built-in plugin tests + optional external JS test detection
 - Deterministic packaging (`.ubb`)
@@ -35,25 +35,25 @@ utilivo build
 
 ## Command summary
 
-- `utilivo create <plugin-dir> [--template basic|widget] [--runtime-mode bundled|host]`
-- `utilivo run [--dir path] [--host 127.0.0.1] [--port 5173|0] [--no-open] [--theme system|light|dark]`
-- `utilivo verify [--json] [--strict] [--dir path]`
-- `utilivo test [--json] [--filter all|builtin|external] [--dir path]`
-- `utilivo pack [--out dir] [--skip-verify]`
-- `utilivo sign <file-or-archive> [--key path] [--out file.sig]`
-- `utilivo build [--skip-tests] [--key path] [--out dir]`
-- `utilivo inspect <archive.ubb> [--json]`
-- `utilivo doctor [--json]`
-- `utilivo keygen [--out dir] [--name prefix]`
-- `utilivo clean [--dir path]`
-- `utilivo manifest lint|format|bump|update|sync` (run from plugin root, or `--dir path`; `update` and `sync` add missing manifest keys; `--dry-run` previews changes)
+- `utilivos create <plugin-dir> [--template basic|widget] [--runtime-mode bundled|host]`
+- `utilivos run [--dir path] [--host 127.0.0.1] [--port 5173|0] [--no-open] [--theme system|light|dark]`
+- `utilivos verify [--json] [--strict] [--dir path]`
+- `utilivos test [--json] [--filter all|builtin|external] [--dir path]`
+- `utilivos pack [--out dir] [--skip-verify]`
+- `utilivos sign <file-or-archive> [--key path] [--out file.sig]`
+- `utilivos build [--skip-tests] [--key path] [--out dir]`
+- `utilivos inspect <archive.ubb> [--json]`
+- `utilivos doctor [--json]`
+- `utilivos keygen [--out dir] [--name prefix]`
+- `utilivos clean [--dir path]`
+- `utilivos manifest lint|format|bump|update|sync` (run from plugin root, or `--dir path`; `update` and `sync` add missing manifest keys; `--dry-run` previews changes)
 
 Full command docs: [`docs/COMMANDS.md`](docs/COMMANDS.md)
 UI framework docs: [`docs/UI_FRAMEWORK.md`](docs/UI_FRAMEWORK.md)
 
 ## Getting started on Linux Mint
 
-`utilivo-sdk` is a Go CLI. On Mint, the normal flow is: install Go and `make`, build the binary, install it into your `PATH`, verify the CLI, then scaffold your first plugin.
+`utilivos-sdk` is a Go CLI. On Mint, the normal flow is: install Go and `make`, build the binary, install it into your `PATH`, verify the CLI, then scaffold your first plugin.
 
 ### 1. Install prerequisites
 
@@ -63,28 +63,28 @@ sudo apt install -y golang-go make dpkg-dev pngquant
 go version
 ```
 
-`utilivo-sdk` expects Go 1.22 or newer. If `go version` reports an older release, install a newer Go toolchain first and make sure that version is the one on your `PATH`.
-`pngquant` is required for manifest icon PNG compression during `utilivo pack`/`utilivo build`.
+`utilivos-sdk` expects Go 1.22 or newer. If `go version` reports an older release, install a newer Go toolchain first and make sure that version is the one on your `PATH`.
+`pngquant` is required for manifest icon PNG compression during `utilivos pack`/`utilivos build`.
 
 ### 2. Build the CLI
 
 From the SDK directory:
 
 ```bash
-cd utilivo-sdk
+cd utilivos-sdk
 make build
 ```
 
 That produces:
 
 ```text
-bin/utilivo
+bin/utilivos
 ```
 
 If you only want to try the CLI without installing it yet:
 
 ```bash
-go run ./cmd/utilivo --help
+go run ./cmd/utilivos --help
 ```
 
 Build first as your normal user. Do not use `sudo make build`.
@@ -97,7 +97,7 @@ System-wide install to `/usr/local/bin`:
 sudo make install
 ```
 
-`make install` only installs `bin/utilivo`. It does not rebuild the binary, so the correct order is always:
+`make install` only installs `bin/utilivos`. It does not rebuild the binary, so the correct order is always:
 
 ```bash
 make build
@@ -106,7 +106,7 @@ sudo make install
 
 This installs:
 
-- `/usr/local/bin/utilivo`
+- `/usr/local/bin/utilivos`
 - `/usr/local/bin/create`
 - `/usr/local/bin/verify`
 - `/usr/local/bin/test`
@@ -169,40 +169,40 @@ sudo make install
 ### 4. Verify the install
 
 ```bash
-which utilivo
-utilivo --help
-utilivo version
+which utilivos
+utilivos --help
+utilivos version
 ```
 
-If you installed to `~/.local/bin` and `which utilivo` returns nothing, your shell `PATH` is not updated yet.
+If you installed to `~/.local/bin` and `which utilivos` returns nothing, your shell `PATH` is not updated yet.
 
 ### 5. Create and build your first plugin
 
 ```bash
-mkdir -p ~/Code/utilivo
-cd ~/Code/utilivo
-utilivo create hello-world
+mkdir -p ~/Code/utilivos
+cd ~/Code/utilivos
+utilivos create hello-world
 cd hello-world
-utilivo run
-utilivo verify
-utilivo test
-utilivo build
+utilivos run
+utilivos verify
+utilivos test
+utilivos build
 ```
 
 Expected result:
 
-- `utilivo create` scaffolds a plugin with the required manifest, localized string files, shared UI kit, and test files
-- `utilivo verify` checks structure, manifest rules, design-system usage, and localization rules
-- `utilivo run` starts a local browser dev shell with runtime metadata injection and live refresh
-- `utilivo test` runs built-in checks and optional external JS tests
-- `utilivo build` produces the signed `.ubb` release artifacts in `dist/`
+- `utilivos create` scaffolds a plugin with the required manifest, localized string files, shared UI kit, and test files
+- `utilivos verify` checks structure, manifest rules, design-system usage, and localization rules
+- `utilivos run` starts a local browser dev shell with runtime metadata injection and live refresh
+- `utilivos test` runs built-in checks and optional external JS tests
+- `utilivos build` produces the signed `.ubb` release artifacts in `dist/`
 
 ### 6. Update an existing source install
 
 If you installed from source and want the latest local version after pulling changes:
 
 ```bash
-cd /path/to/utilivo-sdk
+cd /path/to/utilivos-sdk
 git pull
 make build
 sudo make install
@@ -211,7 +211,7 @@ sudo make install
 If you installed to `~/.local/bin`, use:
 
 ```bash
-cd /path/to/utilivo-sdk
+cd /path/to/utilivos-sdk
 git pull
 make build
 make install PREFIX="$HOME/.local"
@@ -222,20 +222,20 @@ make install PREFIX="$HOME/.local"
 Remove a system-wide source install:
 
 ```bash
-cd /path/to/utilivo-sdk
+cd /path/to/utilivos-sdk
 sudo make uninstall
 ```
 
 Remove a user-local source install:
 
 ```bash
-cd /path/to/utilivo-sdk
+cd /path/to/utilivos-sdk
 make uninstall PREFIX="$HOME/.local"
 ```
 
 That removes:
 
-- `utilivo`
+- `utilivos`
 - `create`
 - `verify`
 - `test`
@@ -253,7 +253,7 @@ make deb
 Install it:
 
 ```bash
-sudo dpkg -i dist/utilivo-sdk_<version>_amd64.deb
+sudo dpkg -i dist/utilivos-sdk_<version>_amd64.deb
 ```
 
 If `dpkg` reports missing dependencies:
@@ -265,14 +265,14 @@ sudo apt --fix-broken install
 Remove the `.deb` install:
 
 ```bash
-sudo apt remove utilivo-sdk
+sudo apt remove utilivos-sdk
 ```
 
 For packaging-specific notes, see [`docs/INSTALL_LINUX_MINT.md`](docs/INSTALL_LINUX_MINT.md).
 
 ## Required plugin structure
 
-Scaffolded by `utilivo create`:
+Scaffolded by `utilivos create`:
 
 ```text
 my-plugin/
@@ -288,7 +288,7 @@ my-plugin/
 │   ├── style.css
 │   ├── locales/
 │   │   └── en.json
-│   ├── utilivo/
+│   ├── utilivos/
 │   │   ├── base.css
 │   │   ├── components.css
 │   │   ├── layout.css
@@ -301,7 +301,7 @@ my-plugin/
 │       └── screenshots/home.png
 ├── tests/
 ├── dist/
-└── .utilivo/project.json
+└── .utilivos/project.json
 ```
 
 ## Manifest requirements
@@ -352,21 +352,21 @@ Current allowlists:
 
 ## Build artifacts
 
-`utilivo build` outputs to `dist/`:
+`utilivos build` outputs to `dist/`:
 
 - `<slug>-<version>.ubb`
 - `<slug>-<version>.manifest.json`
 - `<slug>-<version>.sha256`
 - `<slug>-<version>.sig`
 
-`utilivo pack` and `utilivo build` honor `build.ignore` when it exists.
+`utilivos pack` and `utilivos build` honor `build.ignore` when it exists.
 Use one relative path per line to keep source-only files out of the final `.ubb`.
 The default scaffold excludes `README.md` and `PLAN.md`.
 When the manifest icon is a PNG, packaging scales it down (if needed) so the longest side is at most `512px` (aspect ratio preserved), recompresses it inside the archive, and does not change the source file on disk.
 
 ## Environment variables
 
-- `UTILIVO_PRIVATE_KEY` - optional override for signing key path used by `utilivo build`/`utilivo sign`
+- `UTILIVO_PRIVATE_KEY` - optional override for signing key path used by `utilivos build`/`utilivos sign`
 
 ## Local development
 
@@ -405,6 +405,6 @@ A complete example plugin is included at:
 GitHub Actions CI runs:
 
 - `go test ./...`
-- `go build ./cmd/utilivo`
+- `go build ./cmd/utilivos`
 
 Workflow: [`.github/workflows/ci.yml`](.github/workflows/ci.yml)

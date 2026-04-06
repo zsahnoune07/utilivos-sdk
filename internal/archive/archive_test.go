@@ -8,26 +8,26 @@ import (
 	"testing"
 	"time"
 
-	"utilivo/sdk/internal/archive"
-	"utilivo/sdk/internal/scaffold"
+	"utilivos/sdk/internal/archive"
+	"utilivos/sdk/internal/scaffold"
 )
 
-func TestDropToolUtilivoForHostMode(t *testing.T) {
+func TestDropToolUtilivosForHostMode(t *testing.T) {
 	t.Parallel()
 	entries := []archive.Entry{
 		{RelPath: "manifest.json"},
 		{RelPath: "tool/index.html"},
-		{RelPath: "tool/utilivo/base.css"},
-		{RelPath: "tool/utilivo/tool.js"},
+		{RelPath: "tool/utilivos/base.css"},
+		{RelPath: "tool/utilivos/tool.js"},
 	}
-	filtered := archive.DropToolUtilivoForHostMode(entries, true)
+	filtered := archive.DropToolUtilivosForHostMode(entries, true)
 	if len(filtered) != 2 {
 		t.Fatalf("expected 2 entries, got %d: %#v", len(filtered), filtered)
 	}
-	if archive.DropToolUtilivoForHostMode(entries, false) == nil {
+	if archive.DropToolUtilivosForHostMode(entries, false) == nil {
 		t.Fatal("expected non-nil")
 	}
-	if len(archive.DropToolUtilivoForHostMode(entries, false)) != len(entries) {
+	if len(archive.DropToolUtilivosForHostMode(entries, false)) != len(entries) {
 		t.Fatal("bundled mode should keep all entries")
 	}
 }

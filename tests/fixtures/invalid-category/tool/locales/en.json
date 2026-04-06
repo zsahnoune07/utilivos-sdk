@@ -4,7 +4,7 @@
       "title": "Invalid Category"
     },
     "title": "Invalid Category",
-    "subtitle": "Plugin scaffold created by utilivo-sdk."
+    "subtitle": "Plugin scaffold created by utilivos-sdk."
   },
   "example": {
     "section": {
@@ -31,6 +31,6 @@
     "ready": "Ready.",
     "fallback_name": "friend",
     "short": "Hello, {{name}}. Shared tokens are active.",
-    "detailed": "Hello, {{name}}. This plugin is running inside the Utilivo host shell and rendering with shared Flutter design tokens."
+    "detailed": "Hello, {{name}}. This plugin is running inside the Utilivos host shell and rendering with shared Flutter design tokens."
   }
 }

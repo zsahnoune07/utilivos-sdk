@@ -1,6 +1,6 @@
 # UI Framework Reference
 
-`tool/utilivo/` ships a layered framework intended to cover most plugin UI work with little or no custom CSS.
+`tool/utilivos/` ships a layered framework intended to cover most plugin UI work with little or no custom CSS.
 
 ## File layers
 
@@ -9,15 +9,15 @@
 - `utilities.css` - spacing, display, alignment, sizing, overflow, truncation, visibility, interaction helpers
 - `patterns.css` - semantic screen patterns (settings, forms, results, dashboard stats, searchable list, detail sections, action bars)
 - `components.css` - reusable controls and surfaces; imports `utilities.css` and `patterns.css`
-- `tool.js` - `window.UtilivoUI` helper factories and localization/theme helpers
+- `tool.js` - `window.UtilivosUI` helper factories and localization/theme helpers
 
 Backward compatibility: existing imports remain valid:
 
 ```html
-<link rel="stylesheet" href="./utilivo/base.css" />
-<link rel="stylesheet" href="./utilivo/layout.css" />
-<link rel="stylesheet" href="./utilivo/components.css" />
-<script src="./utilivo/tool.js"></script>
+<link rel="stylesheet" href="./utilivos/base.css" />
+<link rel="stylesheet" href="./utilivos/layout.css" />
+<link rel="stylesheet" href="./utilivos/components.css" />
+<script src="./utilivos/tool.js"></script>
 ```
 
 ## Naming conventions

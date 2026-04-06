@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"utilivo/sdk/internal/util"
+	"utilivos/sdk/internal/util"
 )
 
 type KeyPair struct {
@@ -26,7 +26,7 @@ func DefaultKeyPaths() (privatePath, publicPath string, err error) {
 	if err != nil {
 		return "", "", err
 	}
-	base := filepath.Join(home, ".config", "utilivo", "keys")
+	base := filepath.Join(home, ".config", "utilivos", "keys")
 	return filepath.Join(base, "dev_ed25519_private.pem"), filepath.Join(base, "dev_ed25519_public.pem"), nil
 }
 
@@ -191,7 +191,7 @@ func ResolvePrivateKey(path string) (string, error) {
 		return "", err
 	}
 	if !util.Exists(priv) {
-		return "", fmt.Errorf("no signing key found; run `utilivo keygen` or pass --key")
+		return "", fmt.Errorf("no signing key found; run `utilivos keygen` or pass --key")
 	}
 	return priv, nil
 }

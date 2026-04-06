@@ -14,13 +14,13 @@ import (
 	"strings"
 	"testing"
 
-	"utilivo/sdk/internal/archive"
-	"utilivo/sdk/internal/build"
-	"utilivo/sdk/internal/scaffold"
-	"utilivo/sdk/internal/signing"
-	"utilivo/sdk/internal/templates"
-	"utilivo/sdk/internal/util"
-	"utilivo/sdk/internal/verify"
+	"utilivos/sdk/internal/archive"
+	"utilivos/sdk/internal/build"
+	"utilivos/sdk/internal/scaffold"
+	"utilivos/sdk/internal/signing"
+	"utilivos/sdk/internal/templates"
+	"utilivos/sdk/internal/util"
+	"utilivos/sdk/internal/verify"
 )
 
 func TestCreateVerifyBuildFlow(t *testing.T) {
@@ -100,7 +100,7 @@ func TestPackNormalizesRelativeOutDirAgainstProject(t *testing.T) {
 	}
 }
 
-func TestPackHostModeOmitsToolUtilivo(t *testing.T) {
+func TestPackHostModeOmitsToolUtilivos(t *testing.T) {
 	t.Parallel()
 	project := filepath.Join(t.TempDir(), "plugin")
 	if _, err := scaffold.Create(scaffold.Options{TargetPath: project}); err != nil {
@@ -147,7 +147,7 @@ func TestPackHostModeOmitsToolUtilivo(t *testing.T) {
 	}
 	defer zr.Close()
 	for _, f := range zr.File {
-		if strings.HasPrefix(f.Name, "tool/utilivo/") {
+		if strings.HasPrefix(f.Name, "tool/utilivos/") {
 			t.Fatalf("host .ubb must not contain %s", f.Name)
 		}
 	}

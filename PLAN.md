@@ -1,12 +1,12 @@
-# utilivo-sdk PLAN
+# utilivos-sdk PLAN
 
 ## Repository goal
-Build a strict, lightweight Go CLI (`utilivo`) for the Utilivo plugin ecosystem with a complete local workflow:
+Build a strict, lightweight Go CLI (`utilivos`) for the Utilivos plugin ecosystem with a complete local workflow:
 
-- `utilivo create`
-- `utilivo verify`
-- `utilivo test`
-- `utilivo build`
+- `utilivos create`
+- `utilivos verify`
+- `utilivos test`
+- `utilivos build`
 
 Plus support commands for day-to-day development and release automation.
 
@@ -45,9 +45,9 @@ Generated in `dist/`:
 - `<slug>-<version>.sig`
 
 ### Security model
-- Ed25519 key generation via `utilivo keygen`
+- Ed25519 key generation via `utilivos keygen`
 - detached signatures over archive SHA-256 digest
-- dev key default path under `~/.config/utilivo/keys`
+- dev key default path under `~/.config/utilivos/keys`
 - production signing via injected key path (`--key` / env)
 
 ## Delivery checklist

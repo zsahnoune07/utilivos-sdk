@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"utilivo/sdk/internal/signing"
-	"utilivo/sdk/internal/util"
+	"utilivos/sdk/internal/signing"
+	"utilivos/sdk/internal/util"
 )
 
 type Status string
@@ -30,7 +30,7 @@ type Report struct {
 
 func Run(root string) Report {
 	checks := []Check{
-		{Name: "utilivo", Status: StatusPass, Details: "version " + util.Version},
+		{Name: "utilivos", Status: StatusPass, Details: "version " + util.Version},
 		{Name: "runtime", Status: StatusPass, Details: runtime.GOOS + "/" + runtime.GOARCH},
 		{Name: "go", Status: StatusPass, Details: runtime.Version()},
 	}
@@ -46,7 +46,7 @@ func Run(root string) Report {
 	if err == nil && util.Exists(priv) {
 		checks = append(checks, Check{Name: "signing-key", Status: StatusPass, Details: priv})
 	} else {
-		checks = append(checks, Check{Name: "signing-key", Status: StatusWarn, Details: "dev key missing; run utilivo keygen"})
+		checks = append(checks, Check{Name: "signing-key", Status: StatusWarn, Details: "dev key missing; run utilivos keygen"})
 	}
 
 	if _, err := exec.LookPath("npm"); err == nil {

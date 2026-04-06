@@ -7,7 +7,7 @@
   "form": {
     "section": {
       "title": "Framework-first form pattern",
-      "description": "All controls, spacing, and states are composed from utilivo framework classes."
+      "description": "All controls, spacing, and states are composed from utilivos framework classes."
     },
     "name": {
       "label": "Display name",

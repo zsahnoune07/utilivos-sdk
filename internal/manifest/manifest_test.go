@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"utilivo/sdk/internal/manifest"
+	"utilivos/sdk/internal/manifest"
 )
 
 func TestValidate_DefaultManifestIsValid(t *testing.T) {
@@ -93,7 +93,7 @@ func TestBumpVersion(t *testing.T) {
 func TestValidate_DuplicateTagsFail(t *testing.T) {
 	t.Parallel()
 	m := manifest.Default("Sample", "sample-plugin", "Tester")
-	m.Tags = []string{"starter", "starter", "utilivo"}
+	m.Tags = []string{"starter", "starter", "utilivos"}
 	r := manifest.Validate(m)
 	if r.Errors == 0 {
 		t.Fatal("expected duplicate tag validation error")
@@ -125,7 +125,7 @@ func TestValidate_LocalesMustDefaultToEnglish(t *testing.T) {
 func TestParseJSON_OptionalFieldsAreAccepted(t *testing.T) {
 	t.Parallel()
 	raw := `{
-  "id": "com.utilivo.plugin.sample-plugin",
+  "id": "com.utilivos.plugin.sample-plugin",
   "name": "Sample Plugin",
   "slug": "sample-plugin",
   "version": "1.0.0",
@@ -135,7 +135,7 @@ func TestParseJSON_OptionalFieldsAreAccepted(t *testing.T) {
   "icon": "tool/assets/icon.png",
   "thumb": "tool/assets/thumb.png",
   "category": "utilities",
-  "tags": ["starter", "tool", "utilivo"],
+  "tags": ["starter", "tool", "utilivos"],
   "tier": "free",
   "permissions": ["storage"],
   "ui_type": "page",
@@ -168,12 +168,12 @@ func TestParseJSON_OptionalFieldsAreAccepted(t *testing.T) {
 func TestParseJSON_IntegerManifestFieldsAllowNumericStrings(t *testing.T) {
 	t.Parallel()
 	raw := `{
-  "id": "com.utilivo.plugin.bmi-calculator",
+  "id": "com.utilivos.plugin.bmi-calculator",
   "name": "BMI Calculator",
   "slug": "bmi-calculator",
   "version": "1.0.0",
   "description": "Test",
-  "author": "Utilivo",
+  "author": "Utilivos",
   "entry": "tool/index.html",
   "icon": "tool/assets/icon.png",
   "thumb": "tool/assets/thumb.png",

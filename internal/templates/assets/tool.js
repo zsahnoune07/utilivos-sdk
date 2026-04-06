@@ -1,4 +1,4 @@
-(function registerUtilivoUI(global) {
+(function registerUtilivosUI(global) {
   const CORE_TOKEN_PREFIX = '--uv-';
   const localizationState = {
     defaultLocale: 'en',
@@ -479,11 +479,11 @@
   }
 
   /**
-   * Host session bridge helpers. See Utilivo docs: persistState / loadState and
-   * UtilivoHost.capabilities.restoreRequested (hydrate only after user-driven restore).
+   * Host session bridge helpers. See Utilivos docs: persistState / loadState and
+   * UtilivosHost.capabilities.restoreRequested (hydrate only after user-driven restore).
    */
   function getCapabilities() {
-    const cap = global.UtilivoHost?.capabilities;
+    const cap = global.UtilivosHost?.capabilities;
     const out = {
       restoreRequested: false,
       hasPro: false,
@@ -529,7 +529,7 @@
     let timer = null;
 
     function runPersist() {
-      const u = global.utilivo;
+      const u = global.utilivos;
       if (!u || typeof u.persistState !== 'function') {
         return;
       }
@@ -561,14 +561,14 @@
       runPersist();
     }
 
-    function utilivoLoadStateReady() {
-      const u = global.utilivo;
+    function utilivosLoadStateReady() {
+      const u = global.utilivos;
       return !!(u && typeof u.loadState === 'function');
     }
 
     function waitForHostReady(timeoutMs) {
       const cap = typeof timeoutMs === 'number' && timeoutMs > 0 ? timeoutMs : 4000;
-      if (utilivoLoadStateReady()) {
+      if (utilivosLoadStateReady()) {
         return Promise.resolve();
       }
       return new Promise((resolve) => {
@@ -578,26 +578,26 @@
             return;
           }
           settled = true;
-          document.removeEventListener('utilivo-host-ready', onReady);
+          document.removeEventListener('utilivos-host-ready', onReady);
           resolve();
         };
         const onReady = () => finish();
-        document.addEventListener('utilivo-host-ready', onReady, { once: true });
+        document.addEventListener('utilivos-host-ready', onReady, { once: true });
         global.setTimeout(finish, cap);
       });
     }
 
     async function hydrateFromHost() {
-      // Host sets UtilivoHost.capabilities.restoreRequested in bootstrap. If we check
-      // before the bridge exists, we return early and never hydrate. Wait for utilivo
+      // Host sets UtilivosHost.capabilities.restoreRequested in bootstrap. If we check
+      // before the bridge exists, we return early and never hydrate. Wait for utilivos
       // first, then evaluate restoreRequested (named session / legacy restore).
-      if (!utilivoLoadStateReady()) {
+      if (!utilivosLoadStateReady()) {
         await waitForHostReady(4000);
       }
       if (!shouldHydrateFromHost()) {
         return;
       }
-      const u = global.utilivo;
+      const u = global.utilivos;
       if (!u || typeof u.loadState !== 'function') {
         return;
       }
@@ -697,7 +697,7 @@
       return;
     }
     sessionRestoreListenerInstalled = true;
-    global.document.addEventListener('utilivo-restore-request', (e) => {
+    global.document.addEventListener('utilivos-restore-request', (e) => {
       const detail = e && e.detail;
       if (!detail || typeof detail !== 'object') {
         return;
@@ -706,8 +706,8 @@
       const stateJson =
         detail.stateJson != null ? String(detail.stateJson) : '';
       const report =
-        global.utilivo && typeof global.utilivo.reportRestoreAck === 'function'
-          ? global.utilivo.reportRestoreAck
+        global.utilivos && typeof global.utilivos.reportRestoreAck === 'function'
+          ? global.utilivos.reportRestoreAck
           : null;
       if (!report) {
         return;
@@ -806,7 +806,7 @@
     };
   }
 
-  global.UtilivoUI = {
+  global.UtilivosUI = {
     applyThemePayload,
     ensureToolPage,
     mountToolPage,
@@ -829,7 +829,7 @@
     createErrorState,
   };
 
-  global.UtilivoRuntime = {
+  global.UtilivosRuntime = {
     getCapabilities,
     shouldHydrateFromHost,
     syncState,

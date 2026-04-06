@@ -1,10 +1,10 @@
 {
-  "id": "com.utilivo.plugin.hello-world",
+  "id": "com.utilivos.plugin.hello-world",
   "name": "Hello World",
   "slug": "hello-world",
   "version": "1.0.0",
-  "description": "Hello World plugin for Utilivo.",
-  "author": "Utilivo Developer",
+  "description": "Hello World plugin for Utilivos.",
+  "author": "Utilivos Developer",
   "entry": "tool/index.html",
   "icon": "tool/assets/icon.png",
   "thumb": "tool/assets/thumb.png",
@@ -12,7 +12,7 @@
   "tags": [
     "starter",
     "tool",
-    "utilivo"
+    "utilivos"
   ],
   "tier": "free",
   "permissions": [

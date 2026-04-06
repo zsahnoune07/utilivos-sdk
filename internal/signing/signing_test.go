@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"utilivo/sdk/internal/signing"
+	"utilivos/sdk/internal/signing"
 )
 
 func TestSignAndVerify(t *testing.T) {
@@ -17,7 +17,7 @@ func TestSignAndVerify(t *testing.T) {
 	}
 
 	artifact := filepath.Join(dir, "artifact.bin")
-	if err := os.WriteFile(artifact, []byte("hello utilivo"), 0o644); err != nil {
+	if err := os.WriteFile(artifact, []byte("hello utilivos"), 0o644); err != nil {
 		t.Fatalf("write artifact: %v", err)
 	}
 

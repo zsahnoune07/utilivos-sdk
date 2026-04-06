@@ -10,25 +10,25 @@ import (
 	"regexp"
 	"strings"
 
-	"utilivo/sdk/internal/archive"
-	"utilivo/sdk/internal/manifest"
-	"utilivo/sdk/internal/util"
+	"utilivos/sdk/internal/archive"
+	"utilivos/sdk/internal/manifest"
+	"utilivos/sdk/internal/util"
 )
 
 var (
 	remoteScriptPattern       = regexp.MustCompile(`(?i)<script[^>]+src=["']https?://`)                               // nolint:gochecknoglobals
 	absolutePathPattern       = regexp.MustCompile(`(?i)(/home/[A-Za-z0-9._-]+/|/Users/[A-Za-z0-9._-]+/|[A-Z]:\\\\)`) // nolint:gochecknoglobals
-	baseCSSImportPattern      = regexp.MustCompile(`(?i)<link[^>]+href=["'][^"']*utilivo/base\.css["']`)              // nolint:gochecknoglobals
-	layoutCSSImportPattern    = regexp.MustCompile(`(?i)<link[^>]+href=["'][^"']*utilivo/layout\.css["']`)            // nolint:gochecknoglobals
-	componentsImportPattern   = regexp.MustCompile(`(?i)<link[^>]+href=["'][^"']*utilivo/components\.css["']`)        // nolint:gochecknoglobals
-	toolJSImportPattern       = regexp.MustCompile(`(?i)<script[^>]+src=["'][^"']*utilivo/tool\.js["']`)              // nolint:gochecknoglobals
+	baseCSSImportPattern      = regexp.MustCompile(`(?i)<link[^>]+href=["'][^"']*utilivos/base\.css["']`)              // nolint:gochecknoglobals
+	layoutCSSImportPattern    = regexp.MustCompile(`(?i)<link[^>]+href=["'][^"']*utilivos/layout\.css["']`)            // nolint:gochecknoglobals
+	componentsImportPattern   = regexp.MustCompile(`(?i)<link[^>]+href=["'][^"']*utilivos/components\.css["']`)        // nolint:gochecknoglobals
+	toolJSImportPattern       = regexp.MustCompile(`(?i)<script[^>]+src=["'][^"']*utilivos/tool\.js["']`)              // nolint:gochecknoglobals
 	toolPageContainerPattern  = regexp.MustCompile(`(?i)class=["'][^"']*\buv-tool-page\b[^"']*["']`)                  // nolint:gochecknoglobals
 	localizationMarkerPattern = regexp.MustCompile(`(?i)data-i18n(?:-placeholder|-title|-aria-label|-document-title)?=`)
 	visibleHTMLTextPattern    = regexp.MustCompile(`>\s*[^<\s][^<]*[A-Za-z][^<]*<`)
 	htmlCommentPattern        = regexp.MustCompile(`(?s)<!--.*?-->`)
 	localizationInitPattern   = regexp.MustCompile(`\binitLocalization\s*\(`)
 	tokenOverridePattern      = regexp.MustCompile(`--uv-[a-z0-9-]+\s*:`) // nolint:gochecknoglobals
-	sessionBridgePattern      = regexp.MustCompile(`UtilivoRuntime\.syncState\s*\(|utilivo\.persistState\s*\(|\.persistState\s*\(`) // nolint:gochecknoglobals
+	sessionBridgePattern      = regexp.MustCompile(`UtilivosRuntime\.syncState\s*\(|utilivos\.persistState\s*\(|\.persistState\s*\(`) // nolint:gochecknoglobals
 )
 
 var localizationStringPatterns = []*regexp.Regexp{
@@ -63,7 +63,7 @@ func Run(root string) (Result, error) {
 		"tool/assets/thumb.png",
 		"tool/assets/screenshots/home.png",
 		"tests",
-		".utilivo/project.json",
+		".utilivos/project.json",
 	}
 	for _, rel := range requiredSource {
 		p := filepath.Join(absRoot, rel)
@@ -102,10 +102,10 @@ func Run(root string) (Result, error) {
 	}
 	if runtimeMode == "bundled" {
 		requiredSource = append(requiredSource,
-			"tool/utilivo/base.css",
-			"tool/utilivo/components.css",
-			"tool/utilivo/layout.css",
-			"tool/utilivo/tool.js",
+			"tool/utilivos/base.css",
+			"tool/utilivos/components.css",
+			"tool/utilivos/layout.css",
+			"tool/utilivos/tool.js",
 		)
 	}
 
@@ -181,10 +181,10 @@ func requiredPackagedFiles(runtimeMode string) []string {
 	}
 	if runtimeMode == "bundled" {
 		required = append(required,
-			"tool/utilivo/base.css",
-			"tool/utilivo/components.css",
-			"tool/utilivo/layout.css",
-			"tool/utilivo/tool.js",
+			"tool/utilivos/base.css",
+			"tool/utilivos/components.css",
+			"tool/utilivos/layout.css",
+			"tool/utilivos/tool.js",
 		)
 	}
 	return required
@@ -269,20 +269,20 @@ func validateEntryDesignSystem(entryPath string, content []byte, runtimeMode str
 	r := util.NewReport()
 	if runtimeMode == "bundled" {
 		if !baseCSSImportPattern.Match(content) {
-			r.Add(util.SeverityError, "design.import.base", entryPath, "entry html must import utilivo/base.css")
+			r.Add(util.SeverityError, "design.import.base", entryPath, "entry html must import utilivos/base.css")
 		}
 		if !componentsImportPattern.Match(content) {
-			r.Add(util.SeverityError, "design.import.components", entryPath, "entry html must import utilivo/components.css")
+			r.Add(util.SeverityError, "design.import.components", entryPath, "entry html must import utilivos/components.css")
 		}
 		if !layoutCSSImportPattern.Match(content) {
-			r.Add(util.SeverityError, "design.import.layout", entryPath, "entry html must import utilivo/layout.css")
+			r.Add(util.SeverityError, "design.import.layout", entryPath, "entry html must import utilivos/layout.css")
 		}
 		if !toolJSImportPattern.Match(content) {
-			r.Add(util.SeverityError, "design.import.tool_js", entryPath, "entry html must import utilivo/tool.js")
+			r.Add(util.SeverityError, "design.import.tool_js", entryPath, "entry html must import utilivos/tool.js")
 		}
 	} else {
 		if baseCSSImportPattern.Match(content) || componentsImportPattern.Match(content) || layoutCSSImportPattern.Match(content) || toolJSImportPattern.Match(content) {
-			r.Add(util.SeverityError, "design.import.host_mode", entryPath, "runtime_mode=host must not import local utilivo runtime files")
+			r.Add(util.SeverityError, "design.import.host_mode", entryPath, "runtime_mode=host must not import local utilivos runtime files")
 		}
 	}
 	if !toolPageContainerPattern.Match(content) {
@@ -357,7 +357,7 @@ func scanTokenOverrides(root string) util.Report {
 		}
 		rel = filepath.ToSlash(rel)
 
-		if strings.HasPrefix(rel, "tool/utilivo/") {
+		if strings.HasPrefix(rel, "tool/utilivos/") {
 			return nil
 		}
 		lower := strings.ToLower(rel)
@@ -401,7 +401,7 @@ func scanSessionPersistence(root string) util.Report {
 			return err
 		}
 		rel = filepath.ToSlash(rel)
-		if strings.HasPrefix(rel, "tool/utilivo/") || !strings.HasSuffix(strings.ToLower(rel), ".js") {
+		if strings.HasPrefix(rel, "tool/utilivos/") || !strings.HasSuffix(strings.ToLower(rel), ".js") {
 			return nil
 		}
 
@@ -420,7 +420,7 @@ func scanSessionPersistence(root string) util.Report {
 	}
 	if !found {
 		r.Add(util.SeverityWarning, "session.persist_bridge", "tool",
-			"no UtilivoRuntime.syncState or utilivo.persistState in plugin JavaScript under tool/ (excluding tool/utilivo); call UtilivoRuntime.syncState from tool/main.js so host Save session can read ephemeral state")
+			"no UtilivosRuntime.syncState or utilivos.persistState in plugin JavaScript under tool/ (excluding tool/utilivos); call UtilivosRuntime.syncState from tool/main.js so host Save session can read ephemeral state")
 	}
 	return r
 }
@@ -446,7 +446,7 @@ func scanLocalizationUsage(root string) util.Report {
 			return err
 		}
 		rel = filepath.ToSlash(rel)
-		if strings.HasPrefix(rel, "tool/utilivo/") || !strings.HasSuffix(strings.ToLower(rel), ".js") {
+		if strings.HasPrefix(rel, "tool/utilivos/") || !strings.HasSuffix(strings.ToLower(rel), ".js") {
 			return nil
 		}
 
@@ -469,7 +469,7 @@ func scanLocalizationUsage(root string) util.Report {
 		r.Add(util.SeverityError, "i18n.scan", "tool", walkErr.Error())
 	}
 	if !foundInit {
-		r.Add(util.SeverityError, "i18n.init", "tool/main.js", "plugin JavaScript must initialize localization via UtilivoUI.initLocalization")
+		r.Add(util.SeverityError, "i18n.init", "tool/main.js", "plugin JavaScript must initialize localization via UtilivosUI.initLocalization")
 	}
 	return r
 }

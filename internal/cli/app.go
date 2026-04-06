@@ -11,16 +11,16 @@ import (
 	"strings"
 	"syscall"
 
-	"utilivo/sdk/internal/archive"
-	"utilivo/sdk/internal/build"
-	"utilivo/sdk/internal/devrun"
-	"utilivo/sdk/internal/doctor"
-	"utilivo/sdk/internal/manifest"
-	"utilivo/sdk/internal/scaffold"
-	"utilivo/sdk/internal/signing"
-	plugintesting "utilivo/sdk/internal/testing"
-	"utilivo/sdk/internal/util"
-	"utilivo/sdk/internal/verify"
+	"utilivos/sdk/internal/archive"
+	"utilivos/sdk/internal/build"
+	"utilivos/sdk/internal/devrun"
+	"utilivos/sdk/internal/doctor"
+	"utilivos/sdk/internal/manifest"
+	"utilivos/sdk/internal/scaffold"
+	"utilivos/sdk/internal/signing"
+	plugintesting "utilivos/sdk/internal/testing"
+	"utilivos/sdk/internal/util"
+	"utilivos/sdk/internal/verify"
 )
 
 func Run(argv []string, stdout, stderr io.Writer) (int, error) {
@@ -32,7 +32,7 @@ func Run(argv []string, stdout, stderr io.Writer) (int, error) {
 	args := argv[1:]
 
 	switch cmd {
-	case "utilivo":
+	case "utilivos":
 		if len(args) == 0 {
 			printRootHelp(stdout)
 			return util.ExitUsage, nil
@@ -53,11 +53,11 @@ func normalizeAlias(invocation string, argv []string) string {
 	if name == "create" || name == "verify" || name == "test" || name == "build" || name == "run" {
 		return name
 	}
-	if name == "utilivo" {
-		return "utilivo"
+	if name == "utilivos" {
+		return "utilivos"
 	}
-	if len(argv) > 0 && filepath.Base(argv[0]) == "utilivo" {
-		return "utilivo"
+	if len(argv) > 0 && filepath.Base(argv[0]) == "utilivos" {
+		return "utilivos"
 	}
 	return name
 }
@@ -117,11 +117,11 @@ func runCreate(args []string, stdout, _ io.Writer) (int, error) {
 	}
 	if targetPath == "" {
 		if fs.NArg() != 1 {
-			return util.ExitUsage, errors.New("usage: utilivo create <plugin-dir> [flags]")
+			return util.ExitUsage, errors.New("usage: utilivos create <plugin-dir> [flags]")
 		}
 		targetPath = fs.Arg(0)
 	} else if fs.NArg() != 0 {
-		return util.ExitUsage, errors.New("usage: utilivo create <plugin-dir> [flags]")
+		return util.ExitUsage, errors.New("usage: utilivos create <plugin-dir> [flags]")
 	}
 
 	options := scaffold.Options{
@@ -269,11 +269,11 @@ func runSign(args []string, stdout, _ io.Writer) (int, error) {
 	}
 	if filePath == "" {
 		if fs.NArg() != 1 {
-			return util.ExitUsage, errors.New("usage: utilivo sign <archive-or-file> [--key path] [--out file.sig]")
+			return util.ExitUsage, errors.New("usage: utilivos sign <archive-or-file> [--key path] [--out file.sig]")
 		}
 		filePath = fs.Arg(0)
 	} else if fs.NArg() != 0 {
-		return util.ExitUsage, errors.New("usage: utilivo sign <archive-or-file> [--key path] [--out file.sig]")
+		return util.ExitUsage, errors.New("usage: utilivos sign <archive-or-file> [--key path] [--out file.sig]")
 	}
 	resolved, err := signing.ResolvePrivateKey(*keyPath)
 	if err != nil {
@@ -326,7 +326,7 @@ func runBuild(args []string, stdout, _ io.Writer) (int, error) {
 			_ = util.PrintJSON(stdout, v)
 		} else {
 			printVerifyHuman(stdout, v)
-			fmt.Fprintf(stdout, "next: fix validation issues above, then retry `utilivo build --dir %s`\n", *dir)
+			fmt.Fprintf(stdout, "next: fix validation issues above, then retry `utilivos build --dir %s`\n", *dir)
 		}
 		return code, nil
 	}
@@ -368,7 +368,7 @@ func runBuild(args []string, stdout, _ io.Writer) (int, error) {
 		}
 	} else {
 		printBuildHuman(stdout, artifacts)
-		fmt.Fprintln(stdout, "next: inspect the archive with `utilivo inspect` before shipping")
+		fmt.Fprintln(stdout, "next: inspect the archive with `utilivos inspect` before shipping")
 	}
 	return util.ExitOK, nil
 }
@@ -385,7 +385,7 @@ func runRun(args []string, stdout, _ io.Writer) (int, error) {
 		return util.ExitUsage, err
 	}
 	if fs.NArg() > 0 {
-		return util.ExitUsage, errors.New("usage: utilivo run [--dir .] [--host 127.0.0.1] [--port 5173|0] [--no-open] [--theme system|light|dark]")
+		return util.ExitUsage, errors.New("usage: utilivos run [--dir .] [--host 127.0.0.1] [--port 5173|0] [--no-open] [--theme system|light|dark]")
 	}
 
 	themeValue := strings.ToLower(strings.TrimSpace(*theme))
@@ -440,11 +440,11 @@ func runInspect(args []string, stdout, _ io.Writer) (int, error) {
 	}
 	if archivePath == "" {
 		if fs.NArg() != 1 {
-			return util.ExitUsage, errors.New("usage: utilivo inspect <archive.ubb>")
+			return util.ExitUsage, errors.New("usage: utilivos inspect <archive.ubb>")
 		}
 		archivePath = fs.Arg(0)
 	} else if fs.NArg() != 0 {
-		return util.ExitUsage, errors.New("usage: utilivo inspect <archive.ubb>")
+		return util.ExitUsage, errors.New("usage: utilivos inspect <archive.ubb>")
 	}
 	info, err := archive.Inspect(archivePath)
 	if err != nil {
@@ -488,7 +488,7 @@ func runKeygen(args []string, stdout, _ io.Writer) (int, error) {
 	fs := flag.NewFlagSet("keygen", flag.ContinueOnError)
 	fs.SetOutput(io.Discard)
 	jsonOut := fs.Bool("json", false, "Output JSON")
-	out := fs.String("out", "", "Output directory (default ~/.config/utilivo/keys)")
+	out := fs.String("out", "", "Output directory (default ~/.config/utilivos/keys)")
 	name := fs.String("name", "dev_ed25519", "Key name prefix")
 	if err := fs.Parse(args); err != nil {
 		return util.ExitUsage, err
@@ -534,7 +534,7 @@ func runClean(args []string, stdout, _ io.Writer) (int, error) {
 			continue
 		}
 		name := entry.Name()
-		if strings.HasSuffix(name, ".ubb") || strings.HasSuffix(name, ".utilivo.zip") || strings.HasSuffix(name, ".sig") || strings.HasSuffix(name, ".sha256") || strings.HasSuffix(name, ".manifest.json") {
+		if strings.HasSuffix(name, ".ubb") || strings.HasSuffix(name, ".utilivos.zip") || strings.HasSuffix(name, ".sig") || strings.HasSuffix(name, ".sha256") || strings.HasSuffix(name, ".manifest.json") {
 			if err := os.Remove(filepath.Join(dist, name)); err == nil {
 				removed++
 			}
@@ -546,7 +546,7 @@ func runClean(args []string, stdout, _ io.Writer) (int, error) {
 
 func runManifest(args []string, stdout, _ io.Writer) (int, error) {
 	if len(args) == 0 {
-		return util.ExitUsage, errors.New("usage: utilivo manifest <lint|format|bump|update|sync>")
+		return util.ExitUsage, errors.New("usage: utilivos manifest <lint|format|bump|update|sync>")
 	}
 	sub := args[0]
 	subArgs := args[1:]
@@ -560,7 +560,7 @@ func runManifest(args []string, stdout, _ io.Writer) (int, error) {
 			return util.ExitUsage, err
 		}
 		if fs.NArg() != 0 {
-			return util.ExitUsage, errors.New("usage: utilivo manifest lint [--dir DIR]")
+			return util.ExitUsage, errors.New("usage: utilivos manifest lint [--dir DIR]")
 		}
 		mPath, err := manifestPathInDir(*dir)
 		if err != nil {
@@ -583,7 +583,7 @@ func runManifest(args []string, stdout, _ io.Writer) (int, error) {
 			return util.ExitUsage, err
 		}
 		if fs.NArg() != 0 {
-			return util.ExitUsage, errors.New("usage: utilivo manifest format [--dir DIR]")
+			return util.ExitUsage, errors.New("usage: utilivos manifest format [--dir DIR]")
 		}
 		mPath, err := manifestPathInDir(*dir)
 		if err != nil {
@@ -606,7 +606,7 @@ func runManifest(args []string, stdout, _ io.Writer) (int, error) {
 			return util.ExitUsage, err
 		}
 		if fs.NArg() != 1 {
-			return util.ExitUsage, errors.New("usage: utilivo manifest bump <patch|minor|major> [--dir DIR]")
+			return util.ExitUsage, errors.New("usage: utilivos manifest bump <patch|minor|major> [--dir DIR]")
 		}
 		mPath, err := manifestPathInDir(*dir)
 		if err != nil {
@@ -635,7 +635,7 @@ func runManifest(args []string, stdout, _ io.Writer) (int, error) {
 			return util.ExitUsage, err
 		}
 		if fs.NArg() != 0 {
-			return util.ExitUsage, errors.New("usage: utilivo manifest update|sync [--dir DIR] [--dry-run]")
+			return util.ExitUsage, errors.New("usage: utilivos manifest update|sync [--dir DIR] [--dry-run]")
 		}
 		mPath, err := manifestPathInDir(*dir)
 		if err != nil {
@@ -693,7 +693,7 @@ func runVersion(args []string, stdout, _ io.Writer) (int, error) {
 		return util.ExitUsage, err
 	}
 	if fs.NArg() > 0 {
-		return util.ExitUsage, errors.New("usage: utilivo version [--json]")
+		return util.ExitUsage, errors.New("usage: utilivos version [--json]")
 	}
 	if *jsonOut {
 		payload := map[string]string{"version": util.Version}
@@ -707,10 +707,10 @@ func runVersion(args []string, stdout, _ io.Writer) (int, error) {
 }
 
 func printRootHelp(w io.Writer) {
-	fmt.Fprint(w, `utilivo - Utilivo plugin SDK CLI
+	fmt.Fprint(w, `utilivos - Utilivos plugin SDK CLI
 
 Usage:
-  utilivo <command> [options]
+  utilivos <command> [options]
 
 Commands:
   create     Create a strict plugin scaffold

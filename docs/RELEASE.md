@@ -12,7 +12,7 @@ make build
 Update `internal/util/version.go` and if needed run:
 
 ```bash
-utilivo manifest bump patch
+utilivos manifest bump patch
 ```
 
 ## 3. Build release assets
@@ -24,14 +24,14 @@ make deb
 
 Expected outputs in `dist/`:
 
-- `utilivo` binary
-- `utilivo-sdk_<version>_amd64.deb`
+- `utilivos` binary
+- `utilivos-sdk_<version>_amd64.deb`
 
 ## 4. Smoke test
 
 ```bash
-./bin/utilivo --help
-./bin/utilivo keygen --out /tmp/utilivo-keys
+./bin/utilivos --help
+./bin/utilivos keygen --out /tmp/utilivos-keys
 ```
 
 ## 5. Publish

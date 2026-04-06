@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"utilivo/sdk/internal/manifest"
-	"utilivo/sdk/internal/scaffold"
-	"utilivo/sdk/internal/verify"
+	"utilivos/sdk/internal/manifest"
+	"utilivos/sdk/internal/scaffold"
+	"utilivos/sdk/internal/verify"
 )
 
 func TestVerifyFixtures(t *testing.T) {
@@ -59,7 +59,7 @@ func TestVerifyRejectsMissingDesignSystemImports(t *testing.T) {
 
 	updated := strings.Replace(
 		string(content),
-		`    <link rel="stylesheet" href="./utilivo/components.css" />`+"\n",
+		`    <link rel="stylesheet" href="./utilivos/components.css" />`+"\n",
 		"",
 		1,
 	)
@@ -205,7 +205,7 @@ func TestVerifyWarnsWhenSessionBridgeMissing(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read main.js: %v", err)
 	}
-	updated := strings.ReplaceAll(string(b), "window.UtilivoRuntime.syncState", "window.UtilivoIgnored.syncState")
+	updated := strings.ReplaceAll(string(b), "window.UtilivosRuntime.syncState", "window.UtilivoIgnored.syncState")
 	if err := os.WriteFile(mainPath, []byte(updated), 0o644); err != nil {
 		t.Fatalf("write main.js: %v", err)
 	}

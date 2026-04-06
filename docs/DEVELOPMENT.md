@@ -13,7 +13,7 @@ Optional local env values are documented in `.env.example`.
 ## Useful targets
 
 - `make test` - run Go tests
-- `make build` - build `bin/utilivo`
+- `make build` - build `bin/utilivos`
 - `make run-help` - run CLI help via `go run`
 - `make lint` - run `go vet`
 - `make clean-bin` - remove built binary
@@ -23,7 +23,7 @@ Optional local env values are documented in `.env.example`.
 From any scaffolded plugin directory:
 
 ```bash
-utilivo run
+utilivos run
 ```
 
 This starts a browser dev shell with live refresh and dev runtime metadata injection.
@@ -43,7 +43,7 @@ Fixtures are in `tests/fixtures/` and cover valid and invalid plugin cases for v
 
 ## Architecture
 
-- `cmd/utilivo` - entrypoint
+- `cmd/utilivos` - entrypoint
 - `internal/cli` - command dispatch and UX
 - `internal/scaffold` - plugin generation
 - `internal/manifest` - strict manifest parse/validate

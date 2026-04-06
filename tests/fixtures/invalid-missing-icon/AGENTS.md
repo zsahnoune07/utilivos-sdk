@@ -1,7 +1,7 @@
 # AGENTS.md
 
 Use this file as the operating contract for this plugin project.
-This template is based on the Utilivo AGENTS contract.
+This template is based on the Utilivos AGENTS contract.
 
 ## Plugin context
 - Name: Invalid Missing Icon
@@ -21,9 +21,9 @@ Infer practical defaults when requirements are missing, document assumptions, an
 7. Keep plugin runtime and packaging strictly manifest-driven.
 
 ## Required workflow
-- Run utilivo verify before every build.
-- Run utilivo test before every build.
-- Use utilivo build to produce release artifacts.
+- Run utilivos verify before every build.
+- Run utilivos test before every build.
+- Use utilivos build to produce release artifacts.
 - Keep manifest.json as the source of truth.
 - Publish signed .ubb bundles for distribution.
 
@@ -38,7 +38,7 @@ Infer practical defaults when requirements are missing, document assumptions, an
 - min_app_version and api_version must be intentional and valid.
 
 ## PLUGIN UI RULES
-- Plugins must use utilivo-ui components.
+- Plugins must use utilivos-ui components.
 - Plugins cannot hardcode colors.
 - Plugins must support light/dark mode.
 - Plugins must rely on CSS variables.

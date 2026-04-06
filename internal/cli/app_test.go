@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"utilivo/sdk/internal/cli"
-	"utilivo/sdk/internal/util"
+	"utilivos/sdk/internal/cli"
+	"utilivos/sdk/internal/util"
 )
 
 func TestVersionCommand(t *testing.T) {
@@ -17,7 +17,7 @@ func TestVersionCommand(t *testing.T) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 
-	code, err := cli.Run([]string{"utilivo", "version"}, &stdout, &stderr)
+	code, err := cli.Run([]string{"utilivos", "version"}, &stdout, &stderr)
 	if err != nil {
 		t.Fatalf("run version: %v", err)
 	}
@@ -34,7 +34,7 @@ func TestVersionFlag(t *testing.T) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 
-	code, err := cli.Run([]string{"utilivo", "--version"}, &stdout, &stderr)
+	code, err := cli.Run([]string{"utilivos", "--version"}, &stdout, &stderr)
 	if err != nil {
 		t.Fatalf("run --version: %v", err)
 	}
@@ -51,7 +51,7 @@ func TestVersionJSON(t *testing.T) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 
-	code, err := cli.Run([]string{"utilivo", "version", "--json"}, &stdout, &stderr)
+	code, err := cli.Run([]string{"utilivos", "version", "--json"}, &stdout, &stderr)
 	if err != nil {
 		t.Fatalf("run version --json: %v", err)
 	}
@@ -72,7 +72,7 @@ func TestHelpIncludesRunCommand(t *testing.T) {
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 
-	code, err := cli.Run([]string{"utilivo", "--help"}, &stdout, &stderr)
+	code, err := cli.Run([]string{"utilivos", "--help"}, &stdout, &stderr)
 	if err != nil {
 		t.Fatalf("run --help: %v", err)
 	}
@@ -105,7 +105,7 @@ func TestManifestUpdateDryRun(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
 	raw := `{
-  "id": "com.utilivo.plugin.sample-plugin",
+  "id": "com.utilivos.plugin.sample-plugin",
   "name": "Sample Plugin",
   "slug": "sample-plugin",
   "version": "1.0.0",
@@ -128,7 +128,7 @@ func TestManifestUpdateDryRun(t *testing.T) {
 	}
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	code, err := cli.Run([]string{"utilivo", "manifest", "update", "--dir", dir, "--dry-run"}, &stdout, &stderr)
+	code, err := cli.Run([]string{"utilivos", "manifest", "update", "--dir", dir, "--dry-run"}, &stdout, &stderr)
 	if err != nil {
 		t.Fatalf("run: %v", err)
 	}
@@ -145,7 +145,7 @@ func TestManifestSyncDryRun(t *testing.T) {
 	t.Parallel()
 	dir := t.TempDir()
 	raw := `{
-  "id": "com.utilivo.plugin.sample-plugin",
+  "id": "com.utilivos.plugin.sample-plugin",
   "name": "Sample Plugin",
   "slug": "sample-plugin",
   "version": "1.0.0",
@@ -168,7 +168,7 @@ func TestManifestSyncDryRun(t *testing.T) {
 	}
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
-	code, err := cli.Run([]string{"utilivo", "manifest", "sync", "--dir", dir, "--dry-run"}, &stdout, &stderr)
+	code, err := cli.Run([]string{"utilivos", "manifest", "sync", "--dir", dir, "--dry-run"}, &stdout, &stderr)
 	if err != nil {
 		t.Fatalf("run: %v", err)
 	}
